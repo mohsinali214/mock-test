@@ -6,229 +6,230 @@
 <title>SIUT BSN Mock Test</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f4f4;
-}
-.hidden { display: none; }
-
-#timer {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: #222;
-    color: #00ff6a;
-    text-align: center;
-    padding: 15px;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.container {
-    max-width: 900px;
-    margin: 90px auto 30px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 6px;
-}
-
-h1, h2 {
-    text-align: center;
-    color: #0056b3;
-}
-
-.question {
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #ddd;
-}
-
-.options label {
-    display: block;
-    margin: 6px 0;
-    cursor: pointer;
-}
-
-button {
-    width: 100%;
-    padding: 14px;
-    font-size: 18px;
-    background: #d9534f;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-input[type=text] {
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-}
-
-.expired {
-    text-align: center;
-    color: red;
-    font-size: 22px;
-    margin-top: 15px;
-}
+body{font-family:Arial;margin:0;background:#f4f4f4}
+.hidden{display:none}
+#timer{position:fixed;top:0;width:100%;background:#222;color:#00ff6a;text-align:center;padding:12px;font-size:20px}
+.container{max-width:700px;margin:80px auto;background:#fff;padding:20px;border-radius:6px}
+h1,h2{text-align:center;color:#0056b3}
+button{padding:12px;width:100%;font-size:16px;margin-top:15px}
+.options label{display:block;margin:8px 0}
+.nav{display:flex;gap:10px}
+.nav button{width:50%}
 </style>
 </head>
 
 <body>
 
-<!-- TIMER -->
-<div id="timer" class="hidden">
-Time Remaining: <span id="time">100:00</span>
-</div>
+<div id="timer" class="hidden">Time: <span id="time">100:00</span></div>
 
-<!-- LOGIN -->
-<div class="container" id="loginBox">
+<div class="container" id="login">
 <h1>SIUT BSN Entrance Mock Test</h1>
-<p>Enter Student Name to Start Test</p>
-<input type="text" id="studentName" placeholder="Enter your name">
-<br><br>
+<input id="name" placeholder="Enter student name">
 <button onclick="startTest()">Start Test</button>
-<p id="expiryMsg" class="expired hidden">❌ This test has expired.</p>
+<p id="expired" class="hidden" style="color:red;text-align:center">Test expired</p>
 </div>
 
-<!-- TEST -->
-<div class="container hidden" id="testBox">
-<h2 id="welcome"></h2>
-<div id="questions"></div>
-<button onclick="finishTest()">Finish Exam</button>
+<div class="container hidden" id="exam">
+<h2 id="student"></h2>
+<h3 id="section"></h3>
+<p id="question"></p>
+<div class="options" id="options"></div>
+
+<div class="nav">
+<button onclick="prevQ()">Previous</button>
+<button onclick="nextQ()">Next</button>
 </div>
 
-<!-- RESULT -->
-<div class="container hidden" id="resultBox">
+<button onclick="finish()">Finish Exam</button>
+</div>
+
+<div class="container hidden" id="result">
 <h1>Result</h1>
-<h2 id="resultName"></h2>
-<p id="scoreText"></p>
+<p id="final"></p>
 </div>
 
 <script>
-/* ================= 2-HOUR EXPIRY (FROM FIRST OPEN) ================= */
-
-const TEST_DURATION = 2 * 60 * 60 * 1000; // 2 hours
-
-function isTestExpired() {
-    let startTime = localStorage.getItem("testStartTime");
-
-    if (!startTime) {
-        localStorage.setItem("testStartTime", Date.now());
-        return false;
-    }
-    return Date.now() > (parseInt(startTime) + TEST_DURATION);
+// ===== 2 HOUR EXPIRY =====
+const DURATION=2*60*60*1000;
+function expired(){
+ let t=localStorage.getItem("start");
+ if(!t){localStorage.setItem("start",Date.now());return false}
+ return Date.now()>+t+DURATION
 }
 
-/* ================= QUESTIONS (AUTO 100) ================= */
+// ===== QUESTIONS =====
+const data = {
+Biology: [
+["Powerhouse of the cell?","Nucleus","Mitochondria","Ribosome","Golgi body",1],
+["Vitamin D is synthesized in skin by?","UV light","Moonlight","Heat","Water",0],
+["Largest gland in human body?","Thyroid","Liver","Pituitary","Adrenal",1],
+["Functional unit of kidney?","Neuron","Nephron","Alveoli","Lobule",1],
+["Blood group universal donor?","AB+","O-","O+","AB-",1],
+["Site of photosynthesis?","Mitochondria","Chloroplast","Nucleus","Ribosome",1],
+["Normal human body temperature?","35°C","36°C","37°C","38°C",2],
+["Oxygen is transported by?","Plasma","WBC","RBC","Platelets",2],
+["Insulin regulates?","BP","Sugar","Temperature","Heart rate",1],
+["DNA is found in?","Cytoplasm","Nucleus","Cell wall","Vacuole",1],
+["Longest bone?","Femur","Tibia","Humerus","Ulna",0],
+["Hepatitis affects?","Heart","Liver","Lung","Kidney",1],
+["Cell division for growth?","Meiosis","Mitosis","Fusion","Budding",1],
+["Basic unit of life?","Atom","Cell","Tissue","Organ",1],
+["Vitamin C deficiency causes?","Rickets","Scurvy","Beriberi","Night blindness",1],
+["Plant cell wall made of?","Protein","Cellulose","Lipid","Chitin",1],
+["Largest part of brain?","Cerebellum","Medulla","Cerebrum","Thalamus",2],
+["Blood clotting needs?","Iron","Calcium","Sodium","Potassium",1],
+["RBC lifespan (days)?","60","90","120","150",2],
+["Hormone for fight or flight?","Insulin","Thyroxine","Adrenaline","Estrogen",2]
+],
 
-const subjects = ["Biology","Chemistry","Physics","English","GK"];
-const baseQuestions = [
-  { q: "The powerhouse of the cell is?", o: ["Nucleus","Mitochondria","Ribosome","Golgi body"], a: 1 },
-  { q: "Insulin is secreted by?", o: ["Liver","Pancreas","Kidney","Heart"], a: 1 },
-  { q: "Capital of Pakistan is?", o: ["Karachi","Lahore","Islamabad","Peshawar"], a: 2 },
-  { q: "Unit of force is?", o: ["Watt","Newton","Joule","Pascal"], a: 1 },
-  { q: "Synonym of 'Rapid' is?", o: ["Slow","Fast","Late","Weak"], a: 1 }
-];
+Chemistry: [
+["Atomic number equals?","Neutrons","Protons","Electrons","Mass",1],
+["pH of pure water?","5","6","7","8",2],
+["Gas in fire extinguisher?","Oxygen","Nitrogen","CO2","Hydrogen",2],
+["Chemical formula of salt?","NaCl","KCl","CaCl2","Na2CO3",0],
+["Rusting is example of?","Reduction","Oxidation","Evaporation","Condensation",1],
+["Most electronegative element?","Oxygen","Fluorine","Chlorine","Nitrogen",1],
+["Baking soda formula?","NaOH","Na2CO3","NaHCO3","HCl",2],
+["Acid in stomach?","HNO3","HCl","H2SO4","CH3COOH",1],
+["Valency of carbon?","2","3","4","5",2],
+["Hard water caused by?","Na","K","Ca & Mg","Fe",2],
+["Lightest element?","Helium","Hydrogen","Oxygen","Nitrogen",1],
+["Air is a?","Compound","Mixture","Element","Solution",1],
+["Noble gas?","Oxygen","Nitrogen","Argon","Hydrogen",2],
+["Dry ice is?","Solid water","Solid CO2","Liquid CO2","Solid N2",1],
+["SI unit of pressure?","Pascal","Newton","Joule","Watt",0],
+["Hydrogenation uses catalyst?","Iron","Copper","Nickel","Zinc",2],
+["Chemical name of washing soda?","NaHCO3","Na2CO3","NaOH","NaCl",1],
+["Electron charge is?","Positive","Negative","Neutral","Variable",1],
+["Brass is alloy of?","Cu+Zn","Cu+Sn","Fe+C","Al+Cu",0],
+["Methane is?","Alcohol","Alkane","Acid","Ketone",1]
+],
 
-const questions = [];
-for (let i = 0; i < 100; i++) {
-    const b = baseQuestions[i % baseQuestions.length];
-    questions.push({
-        q: `(${subjects[i % 5]}) Question ${i + 1}: ${b.q}`,
-        options: b.o,
-        answer: b.a
-    });
+Physics: [
+["Unit of force?","Joule","Newton","Watt","Pascal",1],
+["Speed of light?","3×10⁸","3×10⁶","3×10⁵","3×10¹⁰",0],
+["Energy of motion?","PE","KE","Heat","Sound",1],
+["Value of g?","8.9","9.8","10.8","7.8",1],
+["Device to measure current?","Voltmeter","Ammeter","Ohmmeter","Wattmeter",1],
+["Myopia corrected by?","Convex","Concave","Cylindrical","Bifocal",1],
+["Pressure formula?","F×A","F/A","M/V","W/T",1],
+["Heat transfer in liquids?","Conduction","Convection","Radiation","None",1],
+["Density of water max at?","0°C","4°C","10°C","100°C",1],
+["SI unit of power?","Watt","Joule","Volt","Ampere",0],
+["Sound waves are?","Transverse","Longitudinal","EM","Surface",1],
+["Transformer works on?","Self induction","Mutual induction","Resistance","Rectification",1],
+["Escape velocity (km/s)?","7","9.8","11.2","15",2],
+["Resistance unit?","Ampere","Volt","Ohm","Watt",2],
+["Light year measures?","Time","Distance","Speed","Energy",1],
+["Primary colors of light?","RYB","RGB","CMY","BYG",1],
+["Fuse wire metal?","Copper","Iron","Aluminium","Tin-lead",3],
+["Boiling water transfers heat by?","Conduction","Convection","Radiation","All",1],
+["Work formula?","F×d","m×g","v/t","p×v",0],
+["Electric bulb filament?","Copper","Iron","Tungsten","Aluminium",2]
+],
+
+English: [
+["Synonym of Rapid?","Slow","Fast","Late","Weak",1],
+["Antonym of Expand?","Grow","Increase","Shrink","Stretch",2],
+["Correct spelling?","Recieve","Receive","Receeve","Receve",1],
+["Plural of cactus?","Cactuses","Cacti","Cactis","Cactus",1],
+["He ___ gone home.","has","have","had","is",0],
+["Apple of eye means?","Enemy","Dear","Blind","Angry",1],
+["Preposition in 'on table'?","on","table","is","the",0],
+["Noun means?","Action","Name","Quality","Place",1],
+["Verb shows?","Name","Action","Place","Thing",1],
+["Adjective describes?","Verb","Noun","Adverb","Pronoun",1],
+["Correct tense: She ___ yesterday","go","goes","went","gone",2],
+["Opposite of Brave?","Bold","Fearless","Coward","Strong",2],
+["Article before vowel?","a","an","the","none",1],
+["He is afraid ___ dogs","from","of","with","by",1],
+["Plural of child?","Childs","Children","Childes","Childer",1],
+["Synonym of Big?","Tiny","Huge","Narrow","Short",1],
+["Antonym of Hot?","Warm","Cold","Cool","Boil",1],
+["Adverb modifies?","Noun","Verb","Pronoun","Article",1],
+["Sentence ends with?","Comma","Colon","Full stop","Semicolon",2],
+["Pronoun example?","Ali","He","Run","Blue",1]
+],
+
+GK: [
+["Capital of Pakistan?","Karachi","Lahore","Islamabad","Peshawar",2],
+["Founder of SIUT?","Edhi","Adeeb Rizvi","Jinnah","Bhutto",1],
+["Currency of Japan?","Won","Yen","Dollar","Riyal",1],
+["Highest peak of Pakistan?","K2","Nanga Parbat","Everest","Rakaposhi",0],
+["Islamic months?","10","11","12","13",2],
+["First PM of Pakistan?","Jinnah","Liaquat Ali Khan","Ayub Khan","Bhutto",1],
+["City of lights?","Lahore","Islamabad","Karachi","Quetta",2],
+["UN headquarters?","Paris","London","New York","Rome",2],
+["Pakistan independence year?","1945","1946","1947","1948",2],
+["National animal?","Lion","Tiger","Markhor","Deer",2],
+["Largest province by area?","Punjab","Sindh","Balochistan","KPK",2],
+["National flower?","Rose","Jasmine","Sunflower","Tulip",1],
+["Currency of UK?","Dollar","Euro","Pound","Yen",2],
+["World Health Organization?","UNESCO","WHO","UNICEF","FAO",1],
+["Capital of Saudi Arabia?","Makkah","Jeddah","Riyadh","Madina",2],
+["Fastest land animal?","Lion","Cheetah","Tiger","Horse",1],
+["National language of Pakistan?","Punjabi","Urdu","English","Sindhi",1],
+["Largest ocean?","Atlantic","Indian","Pacific","Arctic",2],
+["Earth day celebrated on?","April 22","May 1","June 5","March 23",0],
+["Founder of Pakistan?","Iqbal","Jinnah","Liaquat","Sir Syed",1]
+]
+};
+
+
+// ===== PREPARE =====
+let questions=[];
+for(let s in data){
+ data[s].forEach(q=>questions.push({s,q}));
+}
+questions.sort(()=>Math.random()-0.5);
+
+let i=0,answers={};
+
+// ===== TIMER =====
+let time=100*60;
+setInterval(()=>{
+ if(time>0){
+  time--;
+  document.getElementById("time").innerText=
+  Math.floor(time/60)+":"+String(time%60).padStart(2,"0")
+ } else finish()
+},1000);
+
+// ===== START =====
+function startTest(){
+ if(expired()){document.getElementById("expired").classList.remove("hidden");return}
+ let n=document.getElementById("name").value;
+ if(!n)return alert("Enter name");
+ document.getElementById("login").classList.add("hidden");
+ document.getElementById("exam").classList.remove("hidden");
+ document.getElementById("timer").classList.remove("hidden");
+ document.getElementById("student").innerText="Student: "+n;
+ show()
 }
 
-/* ================= TIMER ================= */
-
-let time = 100 * 60;
-let timerInterval;
-
-function startTimer() {
-    document.getElementById("timer").classList.remove("hidden");
-    timerInterval = setInterval(() => {
-        if (time > 0) {
-            time--;
-            let m = Math.floor(time / 60);
-            let s = time % 60;
-            document.getElementById("time").innerText =
-                (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
-        } else {
-            finishTest();
-        }
-    }, 1000);
+// ===== SHOW Q =====
+function show(){
+ let q=questions[i];
+ document.getElementById("section").innerText=q.s;
+ document.getElementById("question").innerText=(i+1)+". "+q.q[0];
+ let o=document.getElementById("options");o.innerHTML="";
+ q.q.slice(1,5).forEach((opt,idx)=>{
+  o.innerHTML+=`<label><input type=radio name=q ${answers[i]==idx?"checked":""}
+   onclick="answers[${i}]=${idx}"> ${opt}</label>`;
+ });
 }
 
-/* ================= START TEST ================= */
+function nextQ(){if(i<questions.length-1){i++;show()}}
+function prevQ(){if(i>0){i--;show()}}
 
-function startTest() {
-    if (isTestExpired()) {
-        document.getElementById("expiryMsg").classList.remove("hidden");
-        return;
-    }
-
-    const name = document.getElementById("studentName").value.trim();
-    if (!name) {
-        alert("Please enter student name");
-        return;
-    }
-
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("testBox").classList.remove("hidden");
-    document.getElementById("welcome").innerText = "Student: " + name;
-
-    renderQuestions();
-    startTimer();
-}
-
-/* ================= RENDER QUESTIONS ================= */
-
-function renderQuestions() {
-    const qBox = document.getElementById("questions");
-    qBox.innerHTML = "";
-
-    questions.forEach((q, i) => {
-        const div = document.createElement("div");
-        div.className = "question";
-        div.innerHTML = `<b>${i + 1}. ${q.q}</b>`;
-
-        q.options.forEach((opt, j) => {
-            div.innerHTML += `
-            <label>
-                <input type="radio" name="q${i}" value="${j}"> ${opt}
-            </label>`;
-        });
-
-        qBox.appendChild(div);
-    });
-}
-
-/* ================= FINISH & SCORE ================= */
-
-function finishTest() {
-    clearInterval(timerInterval);
-
-    let score = 0;
-    questions.forEach((q, i) => {
-        const selected = document.querySelector(`input[name="q${i}"]:checked`);
-        if (selected && parseInt(selected.value) === q.answer) {
-            score++;
-        }
-    });
-
-    document.getElementById("testBox").classList.add("hidden");
-    document.getElementById("timer").classList.add("hidden");
-    document.getElementById("resultBox").classList.remove("hidden");
-
-    document.getElementById("resultName").innerText =
-        "Student: " + document.getElementById("studentName").value;
-
-    document.getElementById("scoreText").innerText =
-        `Score: ${score} / 100`;
+// ===== FINISH =====
+function finish(){
+ let score=0;
+ questions.forEach((q,idx)=>{if(answers[idx]==q.q[5])score++});
+ document.getElementById("exam").classList.add("hidden");
+ document.getElementById("timer").classList.add("hidden");
+ document.getElementById("result").classList.remove("hidden");
+ document.getElementById("final").innerText=`Score: ${score} / ${questions.length}`;
 }
 </script>
 
