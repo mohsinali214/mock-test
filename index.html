@@ -3,308 +3,309 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIUT BSN Mock Test</title>
+<title>SIUT BSN Entrance Mock Test</title>
 
 <style>
-body{font-family:Arial;margin:0;background:#f4f4f4}
-.hidden{display:none}
-#timer{position:fixed;top:0;width:100%;background:#222;color:#00ff6a;text-align:center;padding:12px;font-size:20px}
-.container{max-width:700px;margin:80px auto;background:#fff;padding:20px;border-radius:6px}
-h1,h2{text-align:center;color:#0056b3}
-button{padding:12px;width:100%;font-size:16px;margin-top:15px}
-.options label{display:block;margin:8px 0}
-.nav{display:flex;gap:10px}
-.nav button{width:50%}
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f6f6f6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 80px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #0b4f8a;
+}
+
+.section-title {
+    margin-top: 30px;
+    padding: 10px;
+    background: #eef3f8;
+    border-left: 5px solid #0b4f8a;
+}
+
+.question {
+    margin: 15px 0;
+}
+
+.options label {
+    display: block;
+    margin: 6px 0;
+    cursor: pointer;
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#startBtn {
+    background: #d9534f;
+    color: white;
+}
+
+#finishBtn {
+    background: #28a745;
+    color: white;
+    margin-top: 20px;
+}
+
+#studentName {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    margin: 15px 0;
+}
+
+#timerBar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: #222;
+    color: #00ff66;
+    padding: 15px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
 </style>
 </head>
 
 <body>
 
-<div id="timer" class="hidden">Time: <span id="time">100:00</span></div>
+<div id="timerBar" class="hidden">
+Time Remaining: <span id="time">100:00</span>
+</div>
 
-<div class="container" id="login">
+<div class="container" id="loginBox">
 <h1>SIUT BSN Entrance Mock Test</h1>
-<input id="name" placeholder="Enter student name">
-<button onclick="startTest()">Start Test</button>
-<p id="expired" class="hidden" style="color:red;text-align:center">Test expired</p>
+<input type="text" id="studentName" placeholder="Enter Student Name">
+<button id="startBtn" onclick="startTest()">Start Test</button>
+<p id="expiredMsg" style="color:red; text-align:center;"></p>
 </div>
 
-<div class="container hidden" id="exam">
-<h2 id="student"></h2>
-<h3 id="section"></h3>
-<p id="question"></p>
-<div class="options" id="options"></div>
-
-<div class="nav">
-<button onclick="prevQ()">Previous</button>
-<button onclick="nextQ()">Next</button>
-</div>
-
-<button onclick="finish()">Finish Exam</button>
-</div>
-
-<div class="container hidden" id="result">
-<h1>Result</h1>
-<p id="final"></p>
+<div class="container hidden" id="examBox">
+<h2>Student: <span id="studentLabel"></span></h2>
+<form id="quizForm"></form>
+<button id="finishBtn" onclick="finishTest()">Finish Exam</button>
 </div>
 
 <script>
-// ===== 2 HOUR EXPIRY =====
-const DURATION=2*60*60*1000;
-function expired(){
- let t=localStorage.getItem("start");
- if(!t){localStorage.setItem("start",Date.now());return false}
- return Date.now()>+t+DURATION
+/* ===================== EXPIRY (2 HOURS) ===================== */
+const TEST_DURATION = 2 * 60 * 60 * 1000;
+
+function isExpired() {
+    let t = localStorage.getItem("testStartTime");
+    if (!t) {
+        localStorage.setItem("testStartTime", Date.now());
+        return false;
+    }
+    return Date.now() > (+t + TEST_DURATION);
 }
 
-// ===== QUESTIONS =====
+/* ===================== TIMER ===================== */
+let timeLeft = 100 * 60;
+let timer;
+
+function startTimer() {
+    timer = setInterval(() => {
+        timeLeft--;
+        let m = Math.floor(timeLeft / 60);
+        let s = timeLeft % 60;
+        document.getElementById("time").innerText =
+            `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        if (timeLeft <= 0) finishTest();
+    }, 1000);
+}
+
+/* ===================== QUESTIONS ===================== */
 const data = {
 Biology: [
-["Powerhouse of the cell?","Nucleus","Mitochondria","Ribosome","Golgi body",1],
-["Vitamin D is synthesized in skin by?","UV light","Moonlight","Heat","Water",0],
-["Largest gland in human body?","Thyroid","Liver","Pituitary","Adrenal",1],
-["Functional unit of kidney?","Neuron","Nephron","Alveoli","Lobule",1],
-["Blood group universal donor?","AB+","O-","O+","AB-",1],
-["Site of photosynthesis?","Mitochondria","Chloroplast","Nucleus","Ribosome",1],
-["Normal human body temperature?","35°C","36°C","37°C","38°C",2],
-["Oxygen is transported by?","Plasma","WBC","RBC","Platelets",2],
-["Insulin regulates?","BP","Sugar","Temperature","Heart rate",1],
-["DNA is found in?","Cytoplasm","Nucleus","Cell wall","Vacuole",1],
-["Longest bone?","Femur","Tibia","Humerus","Ulna",0],
-["Hepatitis affects?","Heart","Liver","Lung","Kidney",1],
-["Cell division for growth?","Meiosis","Mitosis","Fusion","Budding",1],
-["Basic unit of life?","Atom","Cell","Tissue","Organ",1],
-["Vitamin C deficiency causes?","Rickets","Scurvy","Beriberi","Night blindness",1],
-["Plant cell wall made of?","Protein","Cellulose","Lipid","Chitin",1],
-["Largest part of brain?","Cerebellum","Medulla","Cerebrum","Thalamus",2],
-["Blood clotting needs?","Iron","Calcium","Sodium","Potassium",1],
-["RBC lifespan (days)?","60","90","120","150",2],
-["Hormone for fight or flight?","Insulin","Thyroxine","Adrenaline","Estrogen",2]
+["Powerhouse of cell?",["Nucleus","Mitochondria","Ribosome","Golgi"],1],
+["Human blood pH?",["6.8","7.4","8.1","5.5"],1],
+["Vitamin D source?",["Milk","Sunlight","Fruit","Rice"],1],
+["RBC lifespan?",["60","90","120","150"],2],
+["Largest organ?",["Heart","Skin","Liver","Brain"],1],
+["Insulin secreted by?",["Liver","Pancreas","Kidney","Heart"],1],
+["DNA shape?",["Single","Double helix","Circular","Square"],1],
+["Photosynthesis site?",["Root","Leaf","Stem","Flower"],1],
+["Excretion unit?",["Neuron","Nephron","Alveoli","Axon"],1],
+["Human chromosomes?",["44","46","48","42"],1],
+["Blood clot vitamin?",["A","B","C","K"],3],
+["Respiration organ?",["Heart","Lung","Kidney","Brain"],1],
+["Cell wall component?",["Protein","Cellulose","Fat","Starch"],1],
+["Largest gland?",["Thyroid","Liver","Pituitary","Pancreas"],1],
+["Gas exchange?",["Bronchi","Alveoli","Trachea","Nose"],1],
+["Cold blooded?",["Bird","Fish","Human","Dog"],1],
+["Protein digestion starts?",["Mouth","Stomach","Intestine","Colon"],1],
+["Bile stored in?",["Liver","Gall bladder","Pancreas","Stomach"],1],
+["Brain part for balance?",["Cerebrum","Cerebellum","Medulla","Pons"],1],
+["Plant respiration?",["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"],0],
+["Largest bone?",["Femur","Tibia","Ulna","Radius"],0],
+["Blood pigment?",["Myoglobin","Hemoglobin","Keratin","Insulin"],1],
+["Eye lens?",["Concave","Convex","Flat","Plane"],1],
+["Digestive enzyme?",["Amylase","Lipase","Trypsin","All"],3],
+["Urine formation?",["Kidney","Lung","Heart","Brain"],0],
+["Human heartbeat?",["60","72","90","100"],1],
+["Skeleton bones?",["200","206","210","215"],1],
+["Vitamin C disease?",["Rickets","Scurvy","Night blindness","Goiter"],1],
+["Nervous unit?",["Neuron","Nephron","Cell","Axon"],0],
+["Largest brain part?",["Medulla","Cerebrum","Pons","Thalamus"],1]
 ],
 
 Chemistry: [
-["Atomic number equals?","Neutrons","Protons","Electrons","Mass",1],
-["pH of pure water?","5","6","7","8",2],
-["Gas in fire extinguisher?","Oxygen","Nitrogen","CO2","Hydrogen",2],
-["Chemical formula of salt?","NaCl","KCl","CaCl2","Na2CO3",0],
-["Rusting is example of?","Reduction","Oxidation","Evaporation","Condensation",1],
-["Most electronegative element?","Oxygen","Fluorine","Chlorine","Nitrogen",1],
-["Baking soda formula?","NaOH","Na2CO3","NaHCO3","HCl",2],
-["Acid in stomach?","HNO3","HCl","H2SO4","CH3COOH",1],
-["Valency of carbon?","2","3","4","5",2],
-["Hard water caused by?","Na","K","Ca & Mg","Fe",2],
-["Lightest element?","Helium","Hydrogen","Oxygen","Nitrogen",1],
-["Air is a?","Compound","Mixture","Element","Solution",1],
-["Noble gas?","Oxygen","Nitrogen","Argon","Hydrogen",2],
-["Dry ice is?","Solid water","Solid CO2","Liquid CO2","Solid N2",1],
-["SI unit of pressure?","Pascal","Newton","Joule","Watt",0],
-["Hydrogenation uses catalyst?","Iron","Copper","Nickel","Zinc",2],
-["Chemical name of washing soda?","NaHCO3","Na2CO3","NaOH","NaCl",1],
-["Electron charge is?","Positive","Negative","Neutral","Variable",1],
-["Brass is alloy of?","Cu+Zn","Cu+Sn","Fe+C","Al+Cu",0],
-["Methane is?","Alcohol","Alkane","Acid","Ketone",1]
+["Atomic number?",["Protons","Neutrons","Electrons","Mass"],0],
+["pH of water?",["5","7","9","11"],1],
+["Gas in soda?",["Oxygen","Nitrogen","CO2","Hydrogen"],2],
+["Common salt?",["NaCl","KCl","NaOH","HCl"],0],
+["Acid in stomach?",["H2SO4","HNO3","HCl","CH3COOH"],2],
+["Lightest element?",["Helium","Hydrogen","Oxygen","Carbon"],1],
+["Valency of carbon?",["2","3","4","5"],2],
+["Baking soda?",["Na2CO3","NaHCO3","NaCl","NaOH"],1],
+["Rusting is?",["Reduction","Oxidation","Fusion","Evaporation"],1],
+["SI pressure?",["Bar","Pascal","Newton","Joule"],1],
+["Noble gas?",["Nitrogen","Argon","Oxygen","Hydrogen"],1],
+["Hard water cause?",["Sodium","Calcium","Iron","Zinc"],1],
+["Water formula?",["H2O","CO2","O2","NaCl"],0],
+["Fuel gas?",["Methane","Ethane","Propane","Butane"],0],
+["Strong acid?",["HCl","CH3COOH","H2O","NH3"],0],
+["Periodic table groups?",["18","16","12","8"],0],
+["Metal liquid?",["Iron","Mercury","Gold","Silver"],1],
+["Alloy brass?",["Cu+Zn","Cu+Sn","Fe+C","Al+Cu"],0],
+["SI energy?",["Watt","Joule","Volt","Newton"],1],
+["Oxidation means?",["Gain e-","Loss e-","Gain p","Loss n"],1],
+["pH blood?",["6.4","7.4","8.0","5.4"],1],
+["Non metal?",["Iron","Copper","Sulfur","Zinc"],2],
+["Dry ice?",["Solid O2","Solid CO2","Solid H2","Ice"],1],
+["Catalyst oil?",["Iron","Nickel","Copper","Zinc"],1],
+["Atomic mass?",["p+n","p","n","e"],0],
+["Air is?",["Compound","Element","Mixture","Solution"],2],
+["Alkali metal?",["Na","Mg","Fe","Cu"],0],
+["Gas bulb?",["O2","N2","Ar","H2"],2],
+["Electrolysis water?",["O2+H2","CO2","N2","CH4"],0],
+["Organic chemistry?",["Metals","Carbon compounds","Acids","Salts"],1]
 ],
 
 Physics: [
-["Unit of force?","Joule","Newton","Watt","Pascal",1],
-["Speed of light?","3×10⁸","3×10⁶","3×10⁵","3×10¹⁰",0],
-["Energy of motion?","PE","KE","Heat","Sound",1],
-["Value of g?","8.9","9.8","10.8","7.8",1],
-["Device to measure current?","Voltmeter","Ammeter","Ohmmeter","Wattmeter",1],
-["Myopia corrected by?","Convex","Concave","Cylindrical","Bifocal",1],
-["Pressure formula?","F×A","F/A","M/V","W/T",1],
-["Heat transfer in liquids?","Conduction","Convection","Radiation","None",1],
-["Density of water max at?","0°C","4°C","10°C","100°C",1],
-["SI unit of power?","Watt","Joule","Volt","Ampere",0],
-["Sound waves are?","Transverse","Longitudinal","EM","Surface",1],
-["Transformer works on?","Self induction","Mutual induction","Resistance","Rectification",1],
-["Escape velocity (km/s)?","7","9.8","11.2","15",2],
-["Resistance unit?","Ampere","Volt","Ohm","Watt",2],
-["Light year measures?","Time","Distance","Speed","Energy",1],
-["Primary colors of light?","RYB","RGB","CMY","BYG",1],
-["Fuse wire metal?","Copper","Iron","Aluminium","Tin-lead",3],
-["Boiling water transfers heat by?","Conduction","Convection","Radiation","All",1],
-["Work formula?","F×d","m×g","v/t","p×v",0],
-["Electric bulb filament?","Copper","Iron","Tungsten","Aluminium",2]
+["SI force?",["Watt","Newton","Joule","Pascal"],1],
+["Speed unit?",["m/s","km","kg","N"],0],
+["Light speed?",["3×10⁸","3×10⁶","3×10⁵","3×10⁴"],0],
+["Energy of motion?",["Potential","Kinetic","Heat","Sound"],1],
+["Work formula?",["F×d","m×v","v/t","m×a"],0],
+["Current unit?",["Volt","Ampere","Ohm","Watt"],1],
+["Resistance unit?",["Ohm","Volt","Ampere","Joule"],0],
+["Convex lens?",["Diverge","Converge","Reflect","Absorb"],1],
+["Gravity discover?",["Newton","Einstein","Galileo","Tesla"],0],
+["Sound wave?",["Transverse","Longitudinal","EM","Static"],1],
+["Transformer works?",["Induction","Conduction","Radiation","Friction"],0],
+["Pressure formula?",["F/A","A/F","m/v","v/t"],0],
+["Density unit?",["kg/m³","kg","m³","N"],0],
+["Heat transfer liquid?",["Conduction","Convection","Radiation","None"],1],
+["Unit power?",["Joule","Watt","Volt","Ohm"],1],
+["Fuse metal?",["Iron","Copper","Lead","Aluminium"],2],
+["Mirror vehicle?",["Concave","Convex","Plane","None"],1],
+["Energy unit?",["Watt","Joule","Volt","Ohm"],1],
+["Velocity unit?",["m/s","m","s","kg"],0],
+["Electric bulb filament?",["Copper","Iron","Tungsten","Silver"],2],
+["Primary colors?",["RGB","RYB","CMY","Black"],0],
+["Work unit?",["Joule","Newton","Watt","Pascal"],0],
+["Friction produces?",["Light","Heat","Sound","Cold"],1],
+["Gravity unit?",["m/s²","N","J","kg"],0],
+["Transformer uses?",["AC","DC","Battery","Cell"],0],
+["Potential energy?",["Motion","Position","Heat","Sound"],1],
+["Simple machine?",["Pulley","Battery","Motor","Wire"],0],
+["Magnet pole?",["2","3","4","5"],0],
+["Density water max?",["0°C","4°C","10°C","100°C"],1],
+["Energy conservation?",["Lost","Created","Constant","Destroyed"],2]
 ],
 
 English: [
-["Synonym of Rapid?","Slow","Fast","Late","Weak",1],
-["Antonym of Expand?","Grow","Increase","Shrink","Stretch",2],
-["Correct spelling?","Recieve","Receive","Receeve","Receve",1],
-["Plural of cactus?","Cactuses","Cacti","Cactis","Cactus",1],
-["He ___ gone home.","has","have","had","is",0],
-["Apple of eye means?","Enemy","Dear","Blind","Angry",1],
-["Preposition in 'on table'?","on","table","is","the",0],
-["Noun means?","Action","Name","Quality","Place",1],
-["Verb shows?","Name","Action","Place","Thing",1],
-["Adjective describes?","Verb","Noun","Adverb","Pronoun",1],
-["Correct tense: She ___ yesterday","go","goes","went","gone",2],
-["Opposite of Brave?","Bold","Fearless","Coward","Strong",2],
-["Article before vowel?","a","an","the","none",1],
-["He is afraid ___ dogs","from","of","with","by",1],
-["Plural of child?","Childs","Children","Childes","Childer",1],
-["Synonym of Big?","Tiny","Huge","Narrow","Short",1],
-["Antonym of Hot?","Warm","Cold","Cool","Boil",1],
-["Adverb modifies?","Noun","Verb","Pronoun","Article",1],
-["Sentence ends with?","Comma","Colon","Full stop","Semicolon",2],
-["Pronoun example?","Ali","He","Run","Blue",1]
-],
-
-GK: [
-["Capital of Pakistan?","Karachi","Lahore","Islamabad","Peshawar",2],
-["Founder of SIUT?","Edhi","Adeeb Rizvi","Jinnah","Bhutto",1],
-["Currency of Japan?","Won","Yen","Dollar","Riyal",1],
-["Highest peak of Pakistan?","K2","Nanga Parbat","Everest","Rakaposhi",0],
-["Islamic months?","10","11","12","13",2],
-["First PM of Pakistan?","Jinnah","Liaquat Ali Khan","Ayub Khan","Bhutto",1],
-["City of lights?","Lahore","Islamabad","Karachi","Quetta",2],
-["UN headquarters?","Paris","London","New York","Rome",2],
-["Pakistan independence year?","1945","1946","1947","1948",2],
-["National animal?","Lion","Tiger","Markhor","Deer",2],
-["Largest province by area?","Punjab","Sindh","Balochistan","KPK",2],
-["National flower?","Rose","Jasmine","Sunflower","Tulip",1],
-["Currency of UK?","Dollar","Euro","Pound","Yen",2],
-["World Health Organization?","UNESCO","WHO","UNICEF","FAO",1],
-["Capital of Saudi Arabia?","Makkah","Jeddah","Riyadh","Madina",2],
-["Fastest land animal?","Lion","Cheetah","Tiger","Horse",1],
-["National language of Pakistan?","Punjabi","Urdu","English","Sindhi",1],
-["Largest ocean?","Atlantic","Indian","Pacific","Arctic",2],
-["Earth day celebrated on?","April 22","May 1","June 5","March 23",0],
-["Founder of Pakistan?","Iqbal","Jinnah","Liaquat","Sir Syed",1]
+["Synonym Rapid?",["Slow","Fast","Late","Weak"],1],
+["Antonym Expand?",["Grow","Increase","Shrink","Extend"],2],
+["Correct spelling?",["Recieve","Receive","Receeve","Receve"],1],
+["Plural child?",["Childs","Children","Childrens","Child"],1],
+["He ___ gone.",["has","have","had","is"],0],
+["Apple of eye?",["Enemy","Dear","Food","Angry"],1],
+["Preposition on table?",["on","in","at","by"],0],
+["Noun means?",["Action","Name","Quality","Sound"],1],
+["Verb shows?",["Name","Action","Thing","Place"],1],
+["Sentence end?",[".","?","!","All"],3]
 ]
 };
-Chemistry: [
-["Atomic number equals?","Neutrons","Protons","Electrons","Mass",1],
-["pH of pure water?","5","6","7","8",2],
-["Gas in fire extinguisher?","Oxygen","Nitrogen","CO2","Hydrogen",2],
-["Chemical formula of salt?","NaCl","KCl","CaCl2","Na2CO3",0],
-["Rusting is example of?","Reduction","Oxidation","Evaporation","Condensation",1],
-["Most electronegative element?","Oxygen","Fluorine","Chlorine","Nitrogen",1],
-["Baking soda formula?","NaOH","Na2CO3","NaHCO3","HCl",2],
-["Acid present in stomach?","HNO3","HCl","H2SO4","CH3COOH",1],
-["Valency of carbon?","2","3","4","5",2],
-["Hardness of water due to?","Na","K","Ca & Mg","Fe",2],
-["Lightest element?","Helium","Hydrogen","Oxygen","Nitrogen",1],
-["Air is a?","Compound","Mixture","Element","Solution",1],
-["Noble gas?","Oxygen","Nitrogen","Argon","Hydrogen",2],
-["Dry ice is?","Solid water","Solid CO2","Liquid CO2","Solid N2",1],
-["SI unit of pressure?","Pascal","Newton","Joule","Watt",0],
-["Hydrogenation uses catalyst?","Iron","Copper","Nickel","Zinc",2],
-["Chemical name of washing soda?","NaHCO3","Na2CO3","NaOH","NaCl",1],
-["Electron charge is?","Positive","Negative","Neutral","Variable",1],
-["Brass is alloy of?","Cu+Zn","Cu+Sn","Fe+C","Al+Cu",0],
-["Methane is?","Alcohol","Alkane","Acid","Ketone",1],
-["Chemical symbol of gold?","Ag","Au","Gd","Go",1],
-["Water is?","Acid","Base","Neutral","Salt",2],
-["Atomic mass depends on?","Protons","Neutrons","Electrons","Nucleus",1],
-["Oxidation means?","Gain e-","Loss e-","Gain p+","Loss p+",1],
-["Covalent bond formed by?","Transfer","Sharing","Loss","Gain",1],
-["Periodic table made by?","Dalton","Mendeleev","Bohr","Rutherford",1],
-["Gas used in bulbs?","Nitrogen","Argon","Oxygen","CO2",1],
-["Lime water turns milky due to?","O2","CO2","H2","N2",1],
-["Strong acid?","HCl","CH3COOH","H2CO3","NH4OH",0],
-["Matter exists in how many states?","2","3","4","5",1]
-],
-Physics: [
-["Unit of force?","Joule","Newton","Watt","Pascal",1],
-["Speed of light?","3×10⁸","3×10⁶","3×10⁵","3×10¹⁰",0],
-["Energy of motion?","PE","KE","Heat","Sound",1],
-["Value of g?","8.9","9.8","10.8","7.8",1],
-["Device to measure current?","Voltmeter","Ammeter","Ohmmeter","Wattmeter",1],
-["Myopia corrected by?","Convex","Concave","Cylindrical","Bifocal",1],
-["Pressure formula?","F×A","F/A","M/V","W/T",1],
-["Heat transfer in liquids?","Conduction","Convection","Radiation","None",1],
-["Density of water max at?","0°C","4°C","10°C","100°C",1],
-["SI unit of power?","Watt","Joule","Volt","Ampere",0],
-["Sound waves are?","Transverse","Longitudinal","EM","Surface",1],
-["Transformer works on?","Self induction","Mutual induction","Resistance","Rectification",1],
-["Escape velocity of Earth?","7 km/s","9.8 km/s","11.2 km/s","15 km/s",2],
-["Resistance unit?","Ampere","Volt","Ohm","Watt",2],
-["Light year measures?","Time","Distance","Speed","Energy",1],
-["Primary colors of light?","RYB","RGB","CMY","BYG",1],
-["Fuse wire made of?","Copper","Iron","Aluminium","Tin-lead",3],
-["Boiling water heat transfer?","Conduction","Convection","Radiation","All",1],
-["Work formula?","F×d","m×g","v/t","p×v",0],
-["Electric bulb filament?","Copper","Iron","Tungsten","Aluminium",2],
-["Mirror used in vehicles?","Concave","Convex","Plane","None",1],
-["SI unit of charge?","Volt","Ampere","Coulomb","Ohm",2],
-["Gravity discovered by?","Einstein","Newton","Galileo","Bohr",1],
-["Wave with highest frequency?","Red","Blue","Violet","Green",2],
-["Unit of frequency?","Watt","Hertz","Ohm","Tesla",1],
-["Lens that converges light?","Concave","Convex","Plane","None",1],
-["Friction produces?","Heat","Light","Sound","All",3],
-["Simple machine example?","Pulley","Motor","Generator","Battery",0],
-["Energy unit?","Joule","Watt","Volt","Ampere",0],
-["SI unit of work?","Newton","Watt","Joule","Pascal",2]
-],
- English: [
-["Synonym of Rapid?","Slow","Fast","Late","Weak",1],
-["Antonym of Expand?","Grow","Increase","Shrink","Stretch",2],
-["Correct spelling?","Recieve","Receive","Receeve","Receve",1],
-["Plural of child?","Childs","Children","Childes","Childer",1],
-["He ___ gone home.","has","have","had","is",0],
-["Apple of one's eye means?","Enemy","Dear","Blind","Angry",1],
-["Preposition in 'on table'?","on","table","is","the",0],
-["Noun means?","Action","Name","Quality","Place",1],
-["Correct tense: She ___ yesterday","go","goes","went","gone",2],
-["Article before vowel sound?","a","an","the","none",1]
-]
-};
-// ===== PREPARE =====
-let questions=[];
-for(let s in data){
- data[s].forEach(q=>questions.push({s,q}));
-}
-questions.sort(()=>Math.random()-0.5);
 
-let i=0,answers={};
+/* ===================== START TEST ===================== */
+function startTest() {
+    if (isExpired()) {
+        document.getElementById("expiredMsg").innerText = "This test has expired.";
+        return;
+    }
 
-// ===== TIMER =====
-let time=100*60;
-setInterval(()=>{
- if(time>0){
-  time--;
-  document.getElementById("time").innerText=
-  Math.floor(time/60)+":"+String(time%60).padStart(2,"0")
- } else finish()
-},1000);
+    const name = document.getElementById("studentName").value.trim();
+    if (!name) return alert("Enter name");
 
-// ===== START =====
-function startTest(){
- if(expired()){document.getElementById("expired").classList.remove("hidden");return}
- let n=document.getElementById("name").value;
- if(!n)return alert("Enter name");
- document.getElementById("login").classList.add("hidden");
- document.getElementById("exam").classList.remove("hidden");
- document.getElementById("timer").classList.remove("hidden");
- document.getElementById("student").innerText="Student: "+n;
- show()
+    document.getElementById("studentLabel").innerText = name;
+    document.getElementById("loginBox").classList.add("hidden");
+    document.getElementById("examBox").classList.remove("hidden");
+    document.getElementById("timerBar").classList.remove("hidden");
+
+    renderQuestions();
+    startTimer();
 }
 
-// ===== SHOW Q =====
-function show(){
- let q=questions[i];
- document.getElementById("section").innerText=q.s;
- document.getElementById("question").innerText=(i+1)+". "+q.q[0];
- let o=document.getElementById("options");o.innerHTML="";
- q.q.slice(1,5).forEach((opt,idx)=>{
-  o.innerHTML+=`<label><input type=radio name=q ${answers[i]==idx?"checked":""}
-   onclick="answers[${i}]=${idx}"> ${opt}</label>`;
- });
+/* ===================== RENDER ===================== */
+function renderQuestions() {
+    const form = document.getElementById("quizForm");
+    let qNo = 1;
+
+    for (let section in data) {
+        form.innerHTML += `<div class="section-title"><h2>${section}</h2></div>`;
+        data[section].forEach((q, i) => {
+            form.innerHTML += `
+            <div class="question">
+            <b>${qNo++}. ${q[0]}</b>
+            <div class="options">
+            ${q[1].map((o, idx) =>
+                `<label><input type="radio" name="${section}${i}" value="${idx}"> ${o}</label>`
+            ).join("")}
+            </div></div>`;
+        });
+    }
 }
 
-function nextQ(){if(i<questions.length-1){i++;show()}}
-function prevQ(){if(i>0){i--;show()}}
+/* ===================== FINISH ===================== */
+function finishTest() {
+    clearInterval(timer);
+    let score = 0;
 
-// ===== FINISH =====
-function finish(){
- let score=0;
- questions.forEach((q,idx)=>{if(answers[idx]==q.q[5])score++});
- document.getElementById("exam").classList.add("hidden");
- document.getElementById("timer").classList.add("hidden");
- document.getElementById("result").classList.remove("hidden");
- document.getElementById("final").innerText=`Score: ${score} / ${questions.length}`;
+    for (let section in data) {
+        data[section].forEach((q, i) => {
+            const sel = document.querySelector(`input[name="${section}${i}"]:checked`);
+            if (sel && +sel.value === q[2]) score++;
+        });
+    }
+
+    document.body.innerHTML = `
+    <div class="container">
+    <h1>Test Completed</h1>
+    <h2>${document.getElementById("studentLabel").innerText}</h2>
+    <h2>Score: ${score} / 100</h2>
+    </div>`;
 }
 </script>
 
