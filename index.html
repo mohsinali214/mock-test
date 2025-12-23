@@ -66,10 +66,12 @@ input[type=text] {
     padding: 12px;
     font-size: 16px;
 }
+
 .expired {
     text-align: center;
     color: red;
     font-size: 22px;
+    margin-top: 15px;
 }
 </style>
 </head>
@@ -106,17 +108,22 @@ Time Remaining: <span id="time">100:00</span>
 </div>
 
 <script>
-/* ================= TEST EXPIRY (2 HOURS) ================= */
-/* SET TEST START TIME (CHANGE ONLY THIS IF NEEDED) */
-const TEST_START_TIME = new Date("2025-01-24T08:00:00").getTime();
-/* 2 HOURS */
-const TEST_DURATION = 2 * 60 * 60 * 1000;
+/* ================= 2-HOUR EXPIRY (FROM FIRST OPEN) ================= */
+
+const TEST_DURATION = 2 * 60 * 60 * 1000; // 2 hours
 
 function isTestExpired() {
-    return Date.now() > (TEST_START_TIME + TEST_DURATION);
+    let startTime = localStorage.getItem("testStartTime");
+
+    if (!startTime) {
+        localStorage.setItem("testStartTime", Date.now());
+        return false;
+    }
+    return Date.now() > (parseInt(startTime) + TEST_DURATION);
 }
 
 /* ================= QUESTIONS (AUTO 100) ================= */
+
 const subjects = ["Biology","Chemistry","Physics","English","GK"];
 const baseQuestions = [
   { q: "The powerhouse of the cell is?", o: ["Nucleus","Mitochondria","Ribosome","Golgi body"], a: 1 },
@@ -128,15 +135,16 @@ const baseQuestions = [
 
 const questions = [];
 for (let i = 0; i < 100; i++) {
-  const b = baseQuestions[i % baseQuestions.length];
-  questions.push({
-    q: `(${subjects[i % 5]}) Q${i+1}: ${b.q}`,
-    options: b.o,
-    answer: b.a
-  });
+    const b = baseQuestions[i % baseQuestions.length];
+    questions.push({
+        q: `(${subjects[i % 5]}) Question ${i + 1}: ${b.q}`,
+        options: b.o,
+        answer: b.a
+    });
 }
 
 /* ================= TIMER ================= */
+
 let time = 100 * 60;
 let timerInterval;
 
@@ -156,6 +164,7 @@ function startTimer() {
 }
 
 /* ================= START TEST ================= */
+
 function startTest() {
     if (isTestExpired()) {
         document.getElementById("expiryMsg").classList.remove("hidden");
@@ -171,29 +180,35 @@ function startTest() {
     document.getElementById("loginBox").classList.add("hidden");
     document.getElementById("testBox").classList.remove("hidden");
     document.getElementById("welcome").innerText = "Student: " + name;
+
     renderQuestions();
     startTimer();
 }
 
 /* ================= RENDER QUESTIONS ================= */
+
 function renderQuestions() {
     const qBox = document.getElementById("questions");
     qBox.innerHTML = "";
+
     questions.forEach((q, i) => {
         const div = document.createElement("div");
         div.className = "question";
-        div.innerHTML = `<b>${i+1}. ${q.q}</b>`;
+        div.innerHTML = `<b>${i + 1}. ${q.q}</b>`;
+
         q.options.forEach((opt, j) => {
             div.innerHTML += `
             <label>
                 <input type="radio" name="q${i}" value="${j}"> ${opt}
             </label>`;
         });
+
         qBox.appendChild(div);
     });
 }
 
 /* ================= FINISH & SCORE ================= */
+
 function finishTest() {
     clearInterval(timerInterval);
 
