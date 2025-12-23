@@ -1,313 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIUT BSN Entrance Mock Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrance Exam - 100 Questions</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --bg: #f3f4f6;
+            --text: #1f2937;
+            --white: #ffffff;
+            --danger: #dc2626;
+            --success: #16a34a;
+        }
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f6f6f6;
-}
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
 
-.container {
-    max-width: 900px;
-    margin: 80px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-}
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-h1, h2 {
-    text-align: center;
-    color: #0b4f8a;
-}
+        /* --- Login Screen --- */
+        #login-view {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            text-align: center;
+        }
 
-.section-title {
-    margin-top: 30px;
-    padding: 10px;
-    background: #eef3f8;
-    border-left: 5px solid #0b4f8a;
-}
+        .card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
 
-.question {
-    margin: 15px 0;
-}
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box; /* Ensures padding doesn't overflow width */
+        }
 
-.options label {
-    display: block;
-    margin: 6px 0;
-    cursor: pointer;
-}
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
 
-button {
-    width: 100%;
-    padding: 15px;
-    font-size: 18px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        button:hover {
+            background-color: var(--secondary);
+        }
 
-#startBtn {
-    background: #d9534f;
-    color: white;
-}
+        /* --- Quiz View --- */
+        #quiz-view {
+            display: none;
+            padding-bottom: 60px;
+        }
 
-#finishBtn {
-    background: #28a745;
-    color: white;
-    margin-top: 20px;
-}
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background: var(--white);
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 20px;
+        }
 
-#studentName {
-    width: 100%;
-    padding: 14px;
-    font-size: 18px;
-    margin: 15px 0;
-}
+        .timer-box {
+            font-weight: bold;
+            color: var(--danger);
+            font-size: 1.2rem;
+        }
 
-#timerBar {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: #222;
-    color: #00ff66;
-    padding: 15px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-}
+        .section-header {
+            background: var(--secondary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 30px 0 15px 0;
+            font-size: 1.2rem;
+        }
 
-.hidden {
-    display: none;
-}
-</style>
+        .question-card {
+            background: var(--white);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 8px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .option-label:hover {
+            background-color: #f9fafb;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        /* --- Result View --- */
+        #result-view {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 20px auto;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        
+        .score-label {
+            font-size: 1rem;
+            font-weight: normal;
+        }
+
+        .summary-table {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 500px;
+            border-collapse: collapse;
+        }
+
+        .summary-table th, .summary-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .container { padding: 10px; }
+            .sticky-header { font-size: 0.9rem; }
+        }
+    </style>
 </head>
-
 <body>
 
-<div id="timerBar" class="hidden">
-Time Remaining: <span id="time">100:00</span>
-</div>
-
-<div class="container" id="loginBox">
-<h1>SIUT BSN Entrance Mock Test</h1>
-<input type="text" id="studentName" placeholder="Enter Student Name">
-<button id="startBtn" onclick="startTest()">Start Test</button>
-<p id="expiredMsg" style="color:red; text-align:center;"></p>
-</div>
-
-<div class="container hidden" id="examBox">
-<h2>Student: <span id="studentLabel"></span></h2>
-<form id="quizForm"></form>
-<button id="finishBtn" onclick="finishTest()">Finish Exam</button>
-</div>
-
-<script>
-/* ===================== EXPIRY (2 HOURS) ===================== */
-const TEST_DURATION = 2 * 60 * 60 * 1000;
-
-function isExpired() {
-    let t = localStorage.getItem("testStartTime");
-    if (!t) {
-        localStorage.setItem("testStartTime", Date.now());
-        return false;
-    }
-    return Date.now() > (+t + TEST_DURATION);
-}
-
-/* ===================== TIMER ===================== */
-let timeLeft = 100 * 60;
-let timer;
-
-function startTimer() {
-    timer = setInterval(() => {
-        timeLeft--;
-        let m = Math.floor(timeLeft / 60);
-        let s = timeLeft % 60;
-        document.getElementById("time").innerText =
-            `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        if (timeLeft <= 0) finishTest();
-    }, 1000);
-}
-
-/* ===================== QUESTIONS ===================== */
-const data = {
-Biology: [
-["Powerhouse of cell?",["Nucleus","Mitochondria","Ribosome","Golgi"],1],
-["Human blood pH?",["6.8","7.4","8.1","5.5"],1],
-["Vitamin D source?",["Milk","Sunlight","Fruit","Rice"],1],
-["RBC lifespan?",["60","90","120","150"],2],
-["Largest organ?",["Heart","Skin","Liver","Brain"],1],
-["Insulin secreted by?",["Liver","Pancreas","Kidney","Heart"],1],
-["DNA shape?",["Single","Double helix","Circular","Square"],1],
-["Photosynthesis site?",["Root","Leaf","Stem","Flower"],1],
-["Excretion unit?",["Neuron","Nephron","Alveoli","Axon"],1],
-["Human chromosomes?",["44","46","48","42"],1],
-["Blood clot vitamin?",["A","B","C","K"],3],
-["Respiration organ?",["Heart","Lung","Kidney","Brain"],1],
-["Cell wall component?",["Protein","Cellulose","Fat","Starch"],1],
-["Largest gland?",["Thyroid","Liver","Pituitary","Pancreas"],1],
-["Gas exchange?",["Bronchi","Alveoli","Trachea","Nose"],1],
-["Cold blooded?",["Bird","Fish","Human","Dog"],1],
-["Protein digestion starts?",["Mouth","Stomach","Intestine","Colon"],1],
-["Bile stored in?",["Liver","Gall bladder","Pancreas","Stomach"],1],
-["Brain part for balance?",["Cerebrum","Cerebellum","Medulla","Pons"],1],
-["Plant respiration?",["Oxygen","Carbon dioxide","Nitrogen","Hydrogen"],0],
-["Largest bone?",["Femur","Tibia","Ulna","Radius"],0],
-["Blood pigment?",["Myoglobin","Hemoglobin","Keratin","Insulin"],1],
-["Eye lens?",["Concave","Convex","Flat","Plane"],1],
-["Digestive enzyme?",["Amylase","Lipase","Trypsin","All"],3],
-["Urine formation?",["Kidney","Lung","Heart","Brain"],0],
-["Human heartbeat?",["60","72","90","100"],1],
-["Skeleton bones?",["200","206","210","215"],1],
-["Vitamin C disease?",["Rickets","Scurvy","Night blindness","Goiter"],1],
-["Nervous unit?",["Neuron","Nephron","Cell","Axon"],0],
-["Largest brain part?",["Medulla","Cerebrum","Pons","Thalamus"],1]
-],
-
-Chemistry: [
-["Atomic number?",["Protons","Neutrons","Electrons","Mass"],0],
-["pH of water?",["5","7","9","11"],1],
-["Gas in soda?",["Oxygen","Nitrogen","CO2","Hydrogen"],2],
-["Common salt?",["NaCl","KCl","NaOH","HCl"],0],
-["Acid in stomach?",["H2SO4","HNO3","HCl","CH3COOH"],2],
-["Lightest element?",["Helium","Hydrogen","Oxygen","Carbon"],1],
-["Valency of carbon?",["2","3","4","5"],2],
-["Baking soda?",["Na2CO3","NaHCO3","NaCl","NaOH"],1],
-["Rusting is?",["Reduction","Oxidation","Fusion","Evaporation"],1],
-["SI pressure?",["Bar","Pascal","Newton","Joule"],1],
-["Noble gas?",["Nitrogen","Argon","Oxygen","Hydrogen"],1],
-["Hard water cause?",["Sodium","Calcium","Iron","Zinc"],1],
-["Water formula?",["H2O","CO2","O2","NaCl"],0],
-["Fuel gas?",["Methane","Ethane","Propane","Butane"],0],
-["Strong acid?",["HCl","CH3COOH","H2O","NH3"],0],
-["Periodic table groups?",["18","16","12","8"],0],
-["Metal liquid?",["Iron","Mercury","Gold","Silver"],1],
-["Alloy brass?",["Cu+Zn","Cu+Sn","Fe+C","Al+Cu"],0],
-["SI energy?",["Watt","Joule","Volt","Newton"],1],
-["Oxidation means?",["Gain e-","Loss e-","Gain p","Loss n"],1],
-["pH blood?",["6.4","7.4","8.0","5.4"],1],
-["Non metal?",["Iron","Copper","Sulfur","Zinc"],2],
-["Dry ice?",["Solid O2","Solid CO2","Solid H2","Ice"],1],
-["Catalyst oil?",["Iron","Nickel","Copper","Zinc"],1],
-["Atomic mass?",["p+n","p","n","e"],0],
-["Air is?",["Compound","Element","Mixture","Solution"],2],
-["Alkali metal?",["Na","Mg","Fe","Cu"],0],
-["Gas bulb?",["O2","N2","Ar","H2"],2],
-["Electrolysis water?",["O2+H2","CO2","N2","CH4"],0],
-["Organic chemistry?",["Metals","Carbon compounds","Acids","Salts"],1]
-],
-
-Physics: [
-["SI force?",["Watt","Newton","Joule","Pascal"],1],
-["Speed unit?",["m/s","km","kg","N"],0],
-["Light speed?",["3×10⁸","3×10⁶","3×10⁵","3×10⁴"],0],
-["Energy of motion?",["Potential","Kinetic","Heat","Sound"],1],
-["Work formula?",["F×d","m×v","v/t","m×a"],0],
-["Current unit?",["Volt","Ampere","Ohm","Watt"],1],
-["Resistance unit?",["Ohm","Volt","Ampere","Joule"],0],
-["Convex lens?",["Diverge","Converge","Reflect","Absorb"],1],
-["Gravity discover?",["Newton","Einstein","Galileo","Tesla"],0],
-["Sound wave?",["Transverse","Longitudinal","EM","Static"],1],
-["Transformer works?",["Induction","Conduction","Radiation","Friction"],0],
-["Pressure formula?",["F/A","A/F","m/v","v/t"],0],
-["Density unit?",["kg/m³","kg","m³","N"],0],
-["Heat transfer liquid?",["Conduction","Convection","Radiation","None"],1],
-["Unit power?",["Joule","Watt","Volt","Ohm"],1],
-["Fuse metal?",["Iron","Copper","Lead","Aluminium"],2],
-["Mirror vehicle?",["Concave","Convex","Plane","None"],1],
-["Energy unit?",["Watt","Joule","Volt","Ohm"],1],
-["Velocity unit?",["m/s","m","s","kg"],0],
-["Electric bulb filament?",["Copper","Iron","Tungsten","Silver"],2],
-["Primary colors?",["RGB","RYB","CMY","Black"],0],
-["Work unit?",["Joule","Newton","Watt","Pascal"],0],
-["Friction produces?",["Light","Heat","Sound","Cold"],1],
-["Gravity unit?",["m/s²","N","J","kg"],0],
-["Transformer uses?",["AC","DC","Battery","Cell"],0],
-["Potential energy?",["Motion","Position","Heat","Sound"],1],
-["Simple machine?",["Pulley","Battery","Motor","Wire"],0],
-["Magnet pole?",["2","3","4","5"],0],
-["Density water max?",["0°C","4°C","10°C","100°C"],1],
-["Energy conservation?",["Lost","Created","Constant","Destroyed"],2]
-],
-
-English: [
-["Synonym Rapid?",["Slow","Fast","Late","Weak"],1],
-["Antonym Expand?",["Grow","Increase","Shrink","Extend"],2],
-["Correct spelling?",["Recieve","Receive","Receeve","Receve"],1],
-["Plural child?",["Childs","Children","Childrens","Child"],1],
-["He ___ gone.",["has","have","had","is"],0],
-["Apple of eye?",["Enemy","Dear","Food","Angry"],1],
-["Preposition on table?",["on","in","at","by"],0],
-["Noun means?",["Action","Name","Quality","Sound"],1],
-["Verb shows?",["Name","Action","Thing","Place"],1],
-["Sentence end?",[".","?","!","All"],3]
-]
-};
-
-/* ===================== START TEST ===================== */
-function startTest() {
-    if (isExpired()) {
-        document.getElementById("expiredMsg").innerText = "This test has expired.";
-        return;
-    }
-
-    const name = document.getElementById("studentName").value.trim();
-    if (!name) return alert("Enter name");
-
-    document.getElementById("studentLabel").innerText = name;
-    document.getElementById("loginBox").classList.add("hidden");
-    document.getElementById("examBox").classList.remove("hidden");
-    document.getElementById("timerBar").classList.remove("hidden");
-
-    renderQuestions();
-    startTimer();
-}
-
-/* ===================== RENDER ===================== */
-function renderQuestions() {
-    const form = document.getElementById("quizForm");
-    let qNo = 1;
-
-    for (let section in data) {
-        form.innerHTML += `<div class="section-title"><h2>${section}</h2></div>`;
-        data[section].forEach((q, i) => {
-            form.innerHTML += `
-            <div class="question">
-            <b>${qNo++}. ${q[0]}</b>
-            <div class="options">
-            ${q[1].map((o, idx) =>
-                `<label><input type="radio" name="${section}${i}" value="${idx}"> ${o}</label>`
-            ).join("")}
-            </div></div>`;
-        });
-    }
-}
-
-/* ===================== FINISH ===================== */
-function finishTest() {
-    clearInterval(timer);
-    let score = 0;
-
-    for (let section in data) {
-        data[section].forEach((q, i) => {
-            const sel = document.querySelector(`input[name="${section}${i}"]:checked`);
-            if (sel && +sel.value === q[2]) score++;
-        });
-    }
-
-    document.body.innerHTML = `
     <div class="container">
-    <h1>Test Completed</h1>
-    <h2>${document.getElementById("studentLabel").innerText}</h2>
-    <h2>Score: ${score} / 100</h2>
-    </div>`;
-}
-</script>
+        
+        <div id="login-view">
+            <div class="card">
+                <h2>Student Portal</h2>
+                <p>Please enter your full name to begin the entrance exam.</p>
+                <input type="text" id="studentName" placeholder="Enter Full Name" required>
+                <div class="info-text" style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">
+                    Time Limit: 100 Minutes<br>
+                    Total Questions: 100
+                </div>
+                <button onclick="startTest()">Start Test</button>
+            </div>
+        </div>
 
-</body>
-</html>
+        <div id="quiz-view">
+            <div class="sticky-header">
+                <div id="display-name">Student</div>
+                <div class="timer-box" id="timer">00:00</div>
+            </div>
+            
+            <form id="quiz-form">
+                <div id="questions-container"></div>
+                <button type="button" onclick="submitTest()" style="margin-top: 20px; background-color: var(--success);">Submit Exam</button>
+            </form>
+        </div>
+
+        <div id="result-view">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <h2>Exam Completed</h2>
+                <p id="result-message"></p>
+                
+                <div class="score-circle">
+                    <span id="final-score">0</span>
+                    <span class="score-label">%</span>
+                </div>
+
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Section</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="breakdown-body">
+                        </tbody>
+                </table>
+                <p style="color: #666; font-size: 0.8rem;">You can close this window now.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const TEST_DURATION_MINUTES = 100;
+        const EXPIRY_HOURS = 2; // Test link invalid 2 hours after start
+
+        // --- DATA: 100 QUESTIONS ---
+        const questions = [
+            // BIOLOGY (1-30)
+            { s: 'Biology', q: 'Which organelle is known as the powerhouse of the cell?', o: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi Body'], a: 1 },
+            { s: 'Biology', q: 'What is the basic unit of classification?', o: ['Kingdom', 'Family', 'Species', 'Genus'], a: 2 },
+            { s: 'Biology', q: 'In which part of the plant does photosynthesis primarily occur?', o: ['Roots', 'Stem', 'Leaves', 'Flowers'], a: 2 },
+            { s: 'Biology', q: 'Which blood cells help in fighting infections?', o: ['RBCs', 'WBCs', 'Platelets', 'Plasma'], a: 1 },
+            { s: 'Biology', q: 'DNA is found primarily in the:', o: ['Cytoplasm', 'Nucleus', 'Cell Membrane', 'Vacuole'], a: 1 },
+            { s: 'Biology', q: 'The enzyme found in saliva is:', o: ['Pepsin', 'Trypsin', 'Amylase', 'Lipase'], a: 2 },
+            { s: 'Biology', q: 'Which hormone regulates blood sugar levels?', o: ['Adrenaline', 'Insulin', 'Thyroxin', 'Estrogen'], a: 1 },
+            { s: 'Biology', q: 'The longest bone in the human body is:', o: ['Femur', 'Humerus', 'Tibia', 'Fibula'], a: 0 },
+            { s: 'Biology', q: 'Which vitamin is essential for blood clotting?', o: ['Vitamin A', 'Vitamin C', 'Vitamin K', 'Vitamin D'], a: 2 },
+            { s: 'Biology', q: 'Fungi are characterized by cell walls made of:', o: ['Cellulose', 'Chitin', 'Peptidoglycan', 'Lipids'], a: 1 },
+            { s: 'Biology', q: 'The process of cell division in somatic cells is called:', o: ['Meiosis', 'Mitosis', 'Fission', 'Fusion'], a: 1 },
+            { s: 'Biology', q: 'Which of these is NOT a mammal?', o: ['Whale', 'Bat', 'Shark', 'Human'], a: 2 },
+            { s: 'Biology', q: 'The universal blood donor group is:', o: ['A', 'B', 'AB', 'O-'], a: 3 },
+            { s: 'Biology', q: 'Xylem transports:', o: ['Water', 'Food', 'Hormones', 'Oxygen'], a: 0 },
+            { s: 'Biology', q: 'The functional unit of the kidney is:', o: ['Neuron', 'Nephron', 'Alveoli', 'Villi'], a: 1 },
+            { s: 'Biology', q: 'Which gas is released during photosynthesis?', o: ['CO2', 'Oxygen', 'Nitrogen', 'Hydrogen'], a: 1 },
+            { s: 'Biology', q: 'Proteins are polymers of:', o: ['Fatty acids', 'Amino acids', 'Glucose', 'Nucleotides'], a: 1 },
+            { s: 'Biology', q: 'The "suicide bags" of the cell are:', o: ['Lysosomes', 'Ribosomes', 'Plastids', 'Centrioles'], a: 0 },
+            { s: 'Biology', q: 'Which animal has a 3-chambered heart?', o: ['Human', 'Bird', 'Frog', 'Fish'], a: 2 },
+            { s: 'Biology', q: 'Anaerobic respiration in yeast yields:', o: ['Lactic Acid', 'Ethanol & CO2', 'Glucose', 'Oxygen'], a: 1 },
+            { s: 'Biology', q: 'The master gland of the body is:', o: ['Thyroid', 'Pituitary', 'Adrenal', 'Pancreas'], a: 1 },
+            { s: 'Biology', q: 'What is the phenotypic ratio of Mendel’s monohybrid cross?', o: ['1:2:1', '3:1', '9:3:3:1', '1:1'], a: 1 },
+            { s: 'Biology', q: 'Antibiotics are effective against:', o: ['Viruses', 'Bacteria', 'Fungi', 'All of the above'], a: 1 },
+            { s: 'Biology', q: 'The movement of water across a semipermeable membrane is:', o: ['Diffusion', 'Osmosis', 'Active Transport', 'Transpiration'], a: 1 },
+            { s: 'Biology', q: 'Which part of the brain controls balance?', o: ['Cerebrum', 'Cerebellum', 'Medulla', 'Hypothalamus'], a: 1 },
+            { s: 'Biology', q: 'A virus consists of:', o: ['Cell wall & DNA', 'Protein coat & Genetic material', 'Nucleus & Cytoplasm', 'Mitochondria'], a: 1 },
+            { s: 'Biology', q: 'Myopia is corrected by:', o: ['Convex lens', 'Concave lens', 'Cylindrical lens', 'Bifocal lens'], a: 1 },
+            { s: 'Biology', q: 'The study of insects is called:', o: ['Entomology', 'Ornithology', 'Mycology', 'Virology'], a: 0 },
+            { s: 'Biology', q: 'Which element is central to chlorophyll?', o: ['Iron', 'Magnesium', 'Calcium', 'Potassium'], a: 1 },
+            { s: 'Biology', q: 'Double fertilization is a characteristic of:', o: ['Gymnosperms', 'Angiosperms', 'Bryophytes', 'Pteridophytes'], a: 1 },
+
+            // CHEMISTRY (31-60)
+            { s: 'Chemistry', q: 'The pH of pure water at 25°C is:', o: ['0', '7', '14', '1'], a: 1 },
+            { s: 'Chemistry', q: 'Which subatomic particle has a negative charge?', o: ['Proton', 'Neutron', 'Electron', 'Positron'], a: 2 },
+            { s: 'Chemistry', q: 'The most abundant gas in the atmosphere is:', o: ['Oxygen', 'Nitrogen', 'Argon', 'CO2'], a: 1 },
+            { s: 'Chemistry', q: 'Isotopes have the same number of:', o: ['Neutrons', 'Protons', 'Mass', 'Nucleons'], a: 1 },
+            { s: 'Chemistry', q: 'The chemical formula for table salt is:', o: ['KCl', 'NaCl', 'HCl', 'NaOH'], a: 1 },
+            { s: 'Chemistry', q: 'Which bond involves sharing of electron pairs?', o: ['Ionic', 'Covalent', 'Hydrogen', 'Metallic'], a: 1 },
+            { s: 'Chemistry', q: 'The vertical columns in the periodic table are called:', o: ['Periods', 'Groups', 'Series', 'Blocks'], a: 1 },
+            { s: 'Chemistry', q: 'Avogadro’s number is approximately:', o: ['6.02 x 10^22', '6.02 x 10^23', '9.81', '3.14'], a: 1 },
+            { s: 'Chemistry', q: 'Oxidation involves the:', o: ['Gain of electrons', 'Loss of electrons', 'Gain of Hydrogen', 'Loss of Oxygen'], a: 1 },
+            { s: 'Chemistry', q: 'Which acid is found in vinegar?', o: ['Citric Acid', 'Acetic Acid', 'Lactic Acid', 'Formic Acid'], a: 1 },
+            { s: 'Chemistry', q: 'The metal that is liquid at room temperature is:', o: ['Bromine', 'Mercury', 'Gallium', 'Sodium'], a: 1 },
+            { s: 'Chemistry', q: 'Brass is an alloy of:', o: ['Copper & Zinc', 'Copper & Tin', 'Iron & Carbon', 'Lead & Tin'], a: 0 },
+            { s: 'Chemistry', q: 'The main constituent of Natural Gas is:', o: ['Butane', 'Propane', 'Methane', 'Ethane'], a: 2 },
+            { s: 'Chemistry', q: 'Which law relates pressure and volume at constant temperature?', o: ['Charles Law', 'Boyles Law', 'Daltons Law', 'Avogadros Law'], a: 1 },
+            { s: 'Chemistry', q: 'What is the oxidation state of O in H2O2?', o: ['-2', '-1', '0', '+1'], a: 1 },
+            { s: 'Chemistry', q: 'Which element has the highest electronegativity?', o: ['Chlorine', 'Fluorine', 'Oxygen', 'Nitrogen'], a: 1 },
+            { s: 'Chemistry', q: 'An endothermic reaction:', o: ['Releases heat', 'Absorbs heat', 'No heat change', 'Explodes'], a: 1 },
+            { s: 'Chemistry', q: 'Diamond is an allotrope of:', o: ['Sulfur', 'Carbon', 'Silicon', 'Phosphorus'], a: 1 },
+            { s: 'Chemistry', q: 'The functional group -OH belongs to:', o: ['Aldehydes', 'Alcohols', 'Ketones', 'Acids'], a: 1 },
+            { s: 'Chemistry', q: 'Caustic Soda is:', o: ['NaHCO3', 'NaOH', 'Na2CO3', 'KOH'], a: 1 },
+            { s: 'Chemistry', q: 'Which gas turns lime water milky?', o: ['O2', 'H2', 'CO2', 'N2'], a: 2 },
+            { s: 'Chemistry', q: 'The mass of one mole of Carbon-12 is:', o: ['1g', '12g', '6g', '24g'], a: 1 },
+            { s: 'Chemistry', q: 'Catalysts increase reaction rate by:', o: ['Increasing energy', 'Lowering activation energy', 'Increasing temperature', 'Consuming reactants'], a: 1 },
+            { s: 'Chemistry', q: 'Which series contains noble gases?', o: ['Group 1', 'Group 17', 'Group 18', 'Group 2'], a: 2 },
+            { s: 'Chemistry', q: 'Polythene is a polymer of:', o: ['Ethane', 'Ethene', 'Ethyne', 'Ethanol'], a: 1 },
+            { s: 'Chemistry', q: 'Temporary hardness of water is caused by:', o: ['Chlorides', 'Sulfates', 'Bicarbonates', 'Nitrates'], a: 2 },
+            { s: 'Chemistry', q: 'Blue litmus turns red in:', o: ['Acid', 'Base', 'Salt', 'Water'], a: 0 },
+            { s: 'Chemistry', q: 'Radioactivity was discovered by:', o: ['Newton', 'Einstein', 'Becquerel', 'Darwin'], a: 2 },
+            { s: 'Chemistry', q: 'Galvanization involves coating Iron with:', o: ['Tin', 'Zinc', 'Copper', 'Silver'], a: 1 },
+            { s: 'Chemistry', q: 'Which is a weak acid?', o: ['HCl', 'H2SO4', 'HNO3', 'CH3COOH'], a: 3 },
+
+            // PHYSICS (61-90)
+            { s: 'Physics', q: 'The SI unit of Force is:', o: ['Joule', 'Newton', 'Pascal', 'Watt'], a: 1 },
+            { s: 'Physics', q: 'Velocity is defined as:', o: ['Distance/Time', 'Displacement/Time', 'Mass x Accel', 'Force x Dist'], a: 1 },
+            { s: 'Physics', q: 'Kinetic Energy depends on:', o: ['Mass only', 'Velocity only', 'Mass and Velocity', 'Height'], a: 2 },
+            { s: 'Physics', q: 'Sound waves cannot travel through:', o: ['Solids', 'Liquids', 'Gases', 'Vacuum'], a: 3 },
+            { s: 'Physics', q: 'The value of g on Earth is approx:', o: ['9.8 m/s^2', '100 m/s^2', '1.6 m/s^2', '3.8 m/s^2'], a: 0 },
+            { s: 'Physics', q: 'Power is the rate of doing:', o: ['Force', 'Work', 'Momentum', 'Inertia'], a: 1 },
+            { s: 'Physics', q: 'Which color has the longest wavelength?', o: ['Violet', 'Blue', 'Green', 'Red'], a: 3 },
+            { s: 'Physics', q: 'Ohm’s Law formula is:', o: ['V=IR', 'P=VI', 'F=ma', 'E=mc^2'], a: 0 },
+            { s: 'Physics', q: 'A convex mirror is used as:', o: ['Shaving mirror', 'Rear-view mirror', 'Dentist mirror', 'Solar cooker'], a: 1 },
+            { s: 'Physics', q: 'The unit of frequency is:', o: ['Meter', 'Second', 'Hertz', 'Decibel'], a: 2 },
+            { s: 'Physics', q: 'Inertia is a measure of:', o: ['Velocity', 'Force', 'Mass', 'Density'], a: 2 },
+            { s: 'Physics', q: 'Specific heat capacity of water is:', o: ['Low', 'High', 'Zero', 'Variable'], a: 1 },
+            { s: 'Physics', q: 'An electric motor converts:', o: ['Mechanical to Electrical', 'Electrical to Mechanical', 'Chemical to Electrical', 'Heat to Light'], a: 1 },
+            { s: 'Physics', q: 'Total internal reflection occurs when light goes from:', o: ['Rare to Denser', 'Denser to Rare', 'Vacuum to Air', 'Air to Glass'], a: 1 },
+            { s: 'Physics', q: 'The neutron was discovered by:', o: ['Thomson', 'Rutherford', 'Chadwick', 'Bohr'], a: 2 },
+            { s: 'Physics', q: 'One horsepower is equal to:', o: ['746 Watts', '1000 Watts', '550 Watts', '100 Watts'], a: 0 },
+            { s: 'Physics', q: 'Hooke’s law is related to:', o: ['Fluid pressure', 'Elasticity', 'Radioactivity', 'Gravity'], a: 1 },
+            { s: 'Physics', q: 'The core of a transformer is laminated to reduce:', o: ['Copper loss', 'Eddy current loss', 'Hysteresis', 'Flux leakage'], a: 1 },
+            { s: 'Physics', q: 'Semiconductors have resistance that decreases with:', o: ['Cooling', 'Heating', 'Voltage drop', 'Length'], a: 1 },
+            { s: 'Physics', q: 'The speed of light in vacuum is:', o: ['3x10^6 m/s', '3x10^8 m/s', '330 m/s', 'Infinity'], a: 1 },
+            { s: 'Physics', q: 'Which particle has no charge?', o: ['Proton', 'Electron', 'Neutron', 'Alpha'], a: 2 },
+            { s: 'Physics', q: 'Pressure is defined as:', o: ['Force x Area', 'Force / Area', 'Mass / Volume', 'Work / Time'], a: 1 },
+            { s: 'Physics', q: 'Centripetal force acts:', o: ['Towards center', 'Away from center', 'Tangent to circle', 'Upwards'], a: 0 },
+            { s: 'Physics', q: 'The energy of a photon is given by:', o: ['E=mc^2', 'E=hv', 'F=ma', 'KE=1/2mv^2'], a: 1 },
+            { s: 'Physics', q: 'Fusion reaction occurs in:', o: ['Nuclear reactor', 'The Sun', 'X-ray tube', 'Battery'], a: 1 },
+            { s: 'Physics', q: 'Which is a vector quantity?', o: ['Speed', 'Mass', 'Distance', 'Velocity'], a: 3 },
+            { s: 'Physics', q: 'The boiling point of water in Kelvin is:', o: ['100 K', '273 K', '373 K', '0 K'], a: 2 },
+            { s: 'Physics', q: 'A fuse wire should have:', o: ['High MP', 'Low MP', 'High resistance', 'Low conductivity'], a: 1 },
+            { s: 'Physics', q: 'Work done is zero when angle between Force and Displacement is:', o: ['0 deg', '45 deg', '90 deg', '180 deg'], a: 2 },
+            { s: 'Physics', q: 'Capacitance is measured in:', o: ['Ohm', 'Farad', 'Henry', 'Weber'], a: 1 },
+
+            // ENGLISH (91-100)
+            { s: 'English', q: 'Identify the noun: "The cat runs fast."', o: ['Runs', 'Fast', 'The', 'Cat'], a: 3 },
+            { s: 'English', q: 'Synonym of "Happy":', o: ['Sad', 'Joyful', 'Angry', 'Bored'], a: 1 },
+            { s: 'English', q: 'Antonym of "Ancient":', o: ['Old', 'Modern', 'Antique', 'Past'], a: 1 },
+            { s: 'English', q: 'Choose the correct preposition: "The book is __ the table."', o: ['In', 'At', 'On', 'By'], a: 2 },
+            { s: 'English', q: 'Which spelling is correct?', o: ['Recieve', 'Receive', 'Receve', 'Riceive'], a: 1 },
+            { s: 'English', q: 'Past tense of "Go":', o: ['Gone', 'Goed', 'Went', 'Going'], a: 2 },
+            { s: 'English', q: 'A group of lions is called a:',
