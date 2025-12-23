@@ -56,7 +56,7 @@
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-size: 16px;
-            box-sizing: border-box; /* Ensures padding doesn't overflow width */
+            box-sizing: border-box; 
         }
 
         button {
@@ -360,9 +360,213 @@
             { s: 'English', q: 'Choose the correct preposition: "The book is __ the table."', o: ['In', 'At', 'On', 'By'], a: 2 },
             { s: 'English', q: 'Which spelling is correct?', o: ['Recieve', 'Receive', 'Receve', 'Riceive'], a: 1 },
             { s: 'English', q: 'Past tense of "Go":', o: ['Gone', 'Goed', 'Went', 'Going'], a: 2 },
-            { s: 'English', q: 'A group of lions is called a:',
-                     }
+                        { s: 'English', q: 'A group of lions is called a:', o: ['Herd', 'Pack', 'Pride', 'Flock'], a: 2 },
+            { s: 'English', q: '"To break the ice" means:', o: ['To freeze water', 'To start conversation', 'To break a mirror', 'To stop fighting'], a: 1 },
+            { s: 'English', q: 'Complete: "She ___ not like apples."', o: ['Do', 'Does', 'Is', 'Has'], a: 1 },
+            { s: 'English', q: 'What is the plural of "Child"?', o: ['Childs', 'Children', 'Childrens', 'Childes'], a: 1 }
+        ];
+
+        // --- APP STATE ---
+        let timerInterval;
+        let studentName = "";
+
+        // --- INIT ---
+        window.onload = function() {
+            // Check if test is already in progress
+            const savedName = localStorage.getItem('exam_studentName');
+            const startTime = localStorage.getItem('exam_startTime');
+            const isSubmitted = localStorage.getItem('exam_submitted');
+
+            if (isSubmitted === 'true') {
+                showResultState(); // Show results immediately if already done
+                return;
+            }
+
+            if (savedName && startTime) {
+                // Resume session
+                const elapsedSec = (Date.now() - parseInt(startTime)) / 1000;
+                
+                // Check 2 Hour Expiry (Hard limit)
+                if (elapsedSec > EXPIRY_HOURS * 3600) {
+                    alert("Session Expired: It has been more than 2 hours since you started.");
+                    localStorage.clear();
+                    location.reload();
+                    return;
+                }
+
+                // Check Test Timer
+                const totalSeconds = TEST_DURATION_MINUTES * 60;
+                if (elapsedSec < totalSeconds) {
+                    studentName = savedName;
+                    startTest(true); // true = resume
+                } else {
+                    // Time ran out while away
+                    submitTest();
+                }
+            }
+        };
+
+        // --- FUNCTIONS ---
+
+        function startTest(isResume = false) {
+            const nameInput = document.getElementById('studentName');
+            
+            if (!isResume) {
+                if (!nameInput.value.trim()) {
+                    alert("Please enter your name");
+                    return;
+                }
+                studentName = nameInput.value.trim();
+                localStorage.setItem('exam_studentName', studentName);
+                localStorage.setItem('exam_startTime', Date.now());
+            }
+
+            // Update UI
+            document.getElementById('display-name').textContent = studentName;
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('quiz-view').style.display = 'block';
+
+            if (!isResume) renderQuestions(); // Only render if not already there (simple SPA logic)
+            else renderQuestions(); // Actually always render in this simple version
+
+            // Start Timer
+            const startTime = parseInt(localStorage.getItem('exam_startTime'));
+            const durationSec = TEST_DURATION_MINUTES * 60;
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = Date.now();
+                const elapsed = (now - startTime) / 1000;
+                const remaining = durationSec - elapsed;
+
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timer').innerText = "00:00";
+                    submitTest();
+                } else {
+                    const m = Math.floor(remaining / 60);
+                    const s = Math.floor(remaining % 60);
+                    document.getElementById('timer').innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                    
+                    // Warning color
+                    if(remaining < 300) { // last 5 mins
+                         document.getElementById('timer').style.color = 'red';
+                         if(remaining % 2 < 1) document.getElementById('timer').style.opacity = 0;
+                         else document.getElementById('timer').style.opacity = 1;
+                    }
+                }
+            }, 1000);
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            let currentSection = '';
+
+            questions.forEach((q, index) => {
+                // Section Header
+                if (q.s !== currentSection) {
+                    currentSection = q.s;
+                    const header = document.createElement('div');
+                    header.className = 'section-header';
+                    header.innerText = currentSection;
+                    container.appendChild(header);
+                }
+
+                // Card
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                
+                // Question Text
+                const qText = document.createElement('div');
+                qText.className = 'question-text';
+                qText.innerText = `${index + 1}. ${q.q}`;
+                card.appendChild(qText);
+
+                // Options
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+
+                q.o.forEach((opt, i) => {
+                    const label = document.createElement('label');
+                    label.className = 'option-label';
+                    
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = `q${index}`; // Group by question index
+                    radio.value = i;
+                    
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(opt));
+                    grid.appendChild(label);
+                });
+
+                card.appendChild(grid);
+                container.appendChild(card);
+            });
+        }
+
+        function submitTest() {
+            clearInterval(timerInterval);
+            let score = 0;
+            let sectionScores = { 'Biology': {c:0, t:0}, 'Chemistry': {c:0, t:0}, 'Physics': {c:0, t:0}, 'English': {c:0, t:0} };
+
+            questions.forEach((q, index) => {
+                // Update Total for section
+                if(sectionScores[q.s]) sectionScores[q.s].t++;
+
+                // Check answer
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected && parseInt(selected.value) === q.a) {
+                    score++;
+                    if(sectionScores[q.s]) sectionScores[q.s].c++;
+                }
+            });
+
+            // Save results
+            const percentage = Math.round((score / questions.length) * 100);
+            localStorage.setItem('exam_submitted', 'true');
+            localStorage.setItem('exam_score', percentage);
+            localStorage.setItem('exam_details', JSON.stringify(sectionScores));
+
+            showResultUI(percentage, sectionScores);
+        }
+
+        function showResultState() {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('quiz-view').style.display = 'none';
+            
+            const p = localStorage.getItem('exam_score');
+            const d = JSON.parse(localStorage.getItem('exam_details'));
+            showResultUI(p, d);
+        }
+
+        function showResultUI(percentage, details) {
+            document.getElementById('quiz-view').style.display = 'none';
+            document.getElementById('result-view').style.display = 'block';
+            
+            document.getElementById('final-score').innerText = percentage;
+            
+            const tbody = document.getElementById('breakdown-body');
+            tbody.innerHTML = '';
+
+            for (const [subject, data] of Object.entries(details)) {
+                if (data.t > 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${subject}</td><td>${data.c} / ${data.t}</td>`;
+                    tbody.appendChild(row);
+                }
+            }
+
+            const msg = document.getElementById('result-message');
+            if (percentage >= 50) {
+                msg.innerText = "Congratulations! You have passed the entrance exam.";
+                msg.style.color = "green";
+            } else {
+                msg.innerText = "You have completed the exam.";
+            }
+        }
     </script>
 </body>
 </html>
-
