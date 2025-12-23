@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIUT BSN Entrance Exam (Mock) - Timer</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --secondary-color: #f4f4f4;
+            --text-color: #333;
+            --timer-bg: #222;
+            --timer-text: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            padding-top: 80px; /* Space for fixed timer */
+        }
+
+        /* Fixed Timer Header */
+        #timer-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--timer-bg);
+            color: var(--timer-text);
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #timer-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+            color: #4caf50; /* Green start */
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #444;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        .controls button:hover {
+            background-color: #666;
+        }
+
+        /* Container */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .section-title {
+            background-color: var(--secondary-color);
+            padding: 10px;
+            border-left: 5px solid var(--primary-color);
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        /* Questions */
+        .question-block {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-text {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Two columns for options */
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            transition: background 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #eef;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        /* Finish Button */
+        #finish-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: #d9534f;
+            color: white;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 30px;
+        }
+
+        #finish-btn:hover {
+            background-color: #c9302c;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .options {
+                grid-template-columns: 1fr; /* Stack options on mobile */
+            }
+            #timer-display {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="timer-header">
+        <div>Time Remaining:</div>
+        <div id="timer-display">100:00</div>
+        <div class="controls">
+            <button onclick="togglePause()" id="pauseBtn">Pause</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>SIUT BSN Entrance Mock Exam</h1>
+        <p style="text-align: center;">Total Questions: 100 | Time: 120 Minutes (Timer set to 100m for practice speed)</p>
+        
+        <form id="quizForm">
+
+            <div class="section-title"><h2>BIOLOGY (30 MCQs)</h2></div>
+            
+            <div id="questions-container">
+                </div>
+
+            <button type="button" id="finish-btn" onclick="finishTest()">Finish Exam</button>
+        </form>
+    </div>
+
+    <script>
+        // --- 1. THE CONTENT DATA ---
+        const questionsData = [
+            // BIOLOGY
+            { s: "BIOLOGY", q: "The powerhouse of the cell is:", o: ["Nucleus", "Mitochondria", "Ribosome", "Golgi body"] },
+            { s: "BIOLOGY", q: "Which of the following is a membrane-less organelle?", o: ["Mitochondria", "Vacuole", "Ribosome", "Lysosome"] },
+            { s: "BIOLOGY", q: "The basic unit of the human excretory system is:", o: ["Neuron", "Nephron", "Alveoli", "Nephridia"] },
+            { s: "BIOLOGY", q: "Insulin is secreted by which organ?", o: ["Liver", "Spleen", "Pancreas", "Gallbladder"] },
+            { s: "BIOLOGY", q: "The total number of bones in an adult human body is:", o: ["201", "206", "210", "215"] },
+            { s: "BIOLOGY", q: "Which vitamin is known as the 'Sunlight Vitamin'?", o: ["Vitamin A", "Vitamin B", "Vitamin C", "Vitamin D"] },
+            { s: "BIOLOGY", q: "The largest gland in the human body is:", o: ["Thyroid", "Liver", "Adrenal", "Pituitary"] },
+            { s: "BIOLOGY", q: "Universal recipient blood group is:", o: ["O-", "O+", "AB+", "AB-"] },
+            { s: "BIOLOGY", q: "The process of cell division that results in four daughter cells is:", o: ["Mitosis", "Meiosis", "Binary Fission", "Budding"] },
+            { s: "BIOLOGY", q: "The exchange of gases in humans takes place in:", o: ["Bronchi", "Alveoli", "Trachea", "Pleura"] },
+            { s: "BIOLOGY", q: "DNA replication occurs in which phase of the cell cycle?", o: ["G1 phase", "S phase", "G2 phase", "M phase"] },
+            { s: "BIOLOGY", q: "Study of tissues is called:", o: ["Cytology", "Histology", "Ecology", "Morphology"] },
+            { s: "BIOLOGY", q: "Which hormone is responsible for 'Fight or Flight' response?", o: ["Thyroxine", "Insulin", "Adrenaline", "Estrogen"] },
+            { s: "BIOLOGY", q: "The main component of the plant cell wall is:", o: ["Chitin", "Peptidoglycan", "Cellulose", "Lipids"] },
+            { s: "BIOLOGY", q: "Hepatitis is a disease of the:", o: ["Heart", "Lungs", "Liver", "Kidney"] },
+            { s: "BIOLOGY", q: "Which of the following is a cold-blooded animal?", o: ["Bird", "Mammal", "Fish", "Human"] },
+            { s: "BIOLOGY", q: "Protein digestion begins in the:", o: ["Mouth", "Stomach", "Small Intestine", "Esophagus"] },
+            { s: "BIOLOGY", q: "The structural unit of the nervous system is:", o: ["Nephron", "Axon", "Neuron", "Dendrite"] },
+            { s: "BIOLOGY", q: "Bile juice is stored in the:", o: ["Liver", "Gallbladder", "Pancreas", "Stomach"] },
+            { s: "BIOLOGY", q: "Hemoglobin contains which metal?", o: ["Copper", "Iron", "Magnesium", "Zinc"] },
+            { s: "BIOLOGY", q: "The double helix model of DNA was given by:", o: ["Mendel", "Watson & Crick", "Darwin", "Lamarck"] },
+            { s: "BIOLOGY", q: "Which enzyme breaks down starch into sugar?", o: ["Protease", "Lipase", "Amylase", "Pepsin"] },
+            { s: "BIOLOGY", q: "The covering of the lungs is called:", o: ["Pericardium", "Peritoneum", "Pleura", "Meninges"] },
+            { s: "BIOLOGY", q: "Which is the largest part of the human brain?", o: ["Cerebellum", "Medulla", "Cerebrum", "Thalamus"] },
+            { s: "BIOLOGY", q: "Anaerobic respiration in humans produces:", o: ["Lactic Acid", "Ethanol", "Citric Acid", "Pyruvate"] },
+            { s: "BIOLOGY", q: "The lifespan of Red Blood Cells (RBCs) is:", o: ["60 days", "90 days", "120 days", "150 days"] },
+            { s: "BIOLOGY", q: "Chromosomes are made up of:", o: ["DNA and Sugar", "DNA and Protein", "RNA only", "Protein only"] },
+            { s: "BIOLOGY", q: "Father of Genetics is:", o: ["Aristotle", "Gregor Mendel", "Robert Hooke", "Louis Pasteur"] },
+            { s: "BIOLOGY", q: "Which mineral is required for blood clotting?", o: ["Iron", "Sodium", "Calcium", "Potassium"] },
+            { s: "BIOLOGY", q: "Night blindness is caused by deficiency of:", o: ["Vitamin B", "Vitamin C", "Vitamin A", "Vitamin E"] },
+            
+            // CHEMISTRY
+            { s: "CHEMISTRY", q: "The atomic number of an element is the number of:", o: ["Neutrons", "Protons", "Electrons", "Nucleons"] },
+            { s: "CHEMISTRY", q: "The SI unit of pressure is:", o: ["Joule", "Pascal", "Newton", "Watt"] },
+            { s: "CHEMISTRY", q: "Pure water has a pH value of:", o: ["0", "5", "7", "14"] },
+            { s: "CHEMISTRY", q: "Which gas is used in fire extinguishers?", o: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Helium"] },
+            { s: "CHEMISTRY", q: "The formula for Baking Soda is:", o: ["Na2CO3", "NaHCO3", "NaCl", "NaOH"] },
+            { s: "CHEMISTRY", q: "Oxidation involves the:", o: ["Gain of electrons", "Loss of electrons", "Loss of protons", "Gain of hydrogen"] },
+            { s: "CHEMISTRY", q: "The most electronegative element is:", o: ["Oxygen", "Chlorine", "Fluorine", "Nitrogen"] },
+            { s: "CHEMISTRY", q: "Isotopes differ in their number of:", o: ["Protons", "Electrons", "Neutrons", "Positrons"] },
+            { s: "CHEMISTRY", q: "The process of converting solid directly into gas is:", o: ["Evaporation", "Sublimation", "Condensation", "Fusion"] },
+            { s: "CHEMISTRY", q: "Which acid is found in the human stomach?", o: ["H2SO4", "HNO3", "HCl", "CH3COOH"] },
+            { s: "CHEMISTRY", q: "Valency of Carbon is:", o: ["2", "3", "4", "5"] },
+            { s: "CHEMISTRY", q: "Methane is commonly known as:", o: ["Laughing gas", "Marsh gas", "Tear gas", "Noble gas"] },
+            { s: "CHEMISTRY", q: "Brass is an alloy of:", o: ["Copper & Tin", "Copper & Zinc", "Iron & Carbon", "Lead & Tin"] },
+            { s: "CHEMISTRY", q: "The bond formed by sharing of electrons is:", o: ["Ionic", "Covalent", "Metallic", "Hydrogen bond"] },
+            { s: "CHEMISTRY", q: "Which is the lightest element?", o: ["Helium", "Lithium", "Hydrogen", "Beryllium"] },
+            { s: "CHEMISTRY", q: "Hardness of water is due to salts of:", o: ["Sodium", "Potassium", "Calcium and Magnesium", "Iron"] },
+            { s: "CHEMISTRY", q: "The chemical name for Common Salt is:", o: ["Potassium Chloride", "Sodium Chloride", "Calcium Chloride", "Sodium Carbonate"] },
+            { s: "CHEMISTRY", q: "Which of the following is a Noble Gas?", o: ["Nitrogen", "Argon", "Hydrogen", "Oxygen"] },
+            { s: "CHEMISTRY", q: "Avogadro’s number is:", o: ["6.022 × 10²³", "6.022 × 10²²", "1.6 × 10⁻¹⁹", "9.8 × 10⁸"] },
+            { s: "CHEMISTRY", q: "The major constituent of Natural Gas is:", o: ["Ethane", "Methane", "Propane", "Butane"] },
+            { s: "CHEMISTRY", q: "Rusting of iron is an example of:", o: ["Reduction", "Polymerization", "Oxidation", "Evaporation"] },
+            { s: "CHEMISTRY", q: "Diamond is an allotropic form of:", o: ["Silicon", "Carbon", "Sulphur", "Germanium"] },
+            { s: "CHEMISTRY", q: "The simplest hydrocarbon is:", o: ["Ethane", "Methane", "Benzene", "Acetylene"] },
+            { s: "CHEMISTRY", q: "Which catalyst is used in the hydrogenation of vegetable oil?", o: ["Iron", "Platinum", "Nickel", "Copper"] },
+            { s: "CHEMISTRY", q: "The mass of an electron is approximately:", o: ["1 amu", "0 amu", "1836 amu", "2 amu"] },
+            { s: "CHEMISTRY", q: "Air is a/an:", o: ["Compound", "Element", "Mixture", "Electrolyte"] },
+            { s: "CHEMISTRY", q: "Which gas is filled in electric bulbs?", o: ["Nitrogen", "Argon", "Carbon dioxide", "Oxygen"] },
+            { s: "CHEMISTRY", q: "The pH of human blood is approximately:", o: ["6.4", "7.4", "8.4", "5.4"] },
+            { s: "CHEMISTRY", q: "Organic chemistry is the study of:", o: ["Metals", "Carbon compounds", "Non-metals", "Rocks"] },
+            { s: "CHEMISTRY", q: "Dry Ice is:", o: ["Solid Nitrogen", "Solid Carbon dioxide", "Frozen Water", "Liquid Helium"] },
+            
+            // PHYSICS
+            { s: "PHYSICS", q: "Light year is a unit of:", o: ["Time", "Speed", "Distance", "Intensity"] },
+            { s: "PHYSICS", q: "The speed of light in vacuum is:", o: ["3 × 10⁸ m/s", "3 × 10¹⁰ m/s", "3 × 10⁶ m/s", "3 × 10⁵ m/s"] },
+            { s: "PHYSICS", q: "Newton’s first law of motion is also called:", o: ["Law of Gravity", "Law of Inertia", "Law of Momentum", "Law of Energy"] },
+            { s: "PHYSICS", q: "The device used to measure electric current is:", o: ["Voltmeter", "Ammeter", "Galvanometer", "Ohmmeter"] },
+            { s: "PHYSICS", q: "Sound waves are:", o: ["Transverse", "Longitudinal", "Electromagnetic", "Latent"] },
+            { s: "PHYSICS", q: "Energy possessed by a body due to its motion is:", o: ["Potential Energy", "Kinetic Energy", "Chemical Energy", "Nuclear Energy"] },
+            { s: "PHYSICS", q: "The value of 'g' at the surface of Earth is:", o: ["8.9 m/s²", "9.8 m/s²", "10.8 m/s²", "7.8 m/s²"] },
+            { s: "PHYSICS", q: "Short-sightedness (Myopia) can be corrected using:", o: ["Convex lens", "Concave lens", "Bifocal lens", "Cylindrical lens"] },
+            { s: "PHYSICS", q: "Resistance is measured in:", o: ["Ampere", "Volt", "Ohm", "Watt"] },
+            { s: "PHYSICS", q: "Which color of light has the longest wavelength?", o: ["Violet", "Blue", "Red", "Green"] },
+            { s: "PHYSICS", q: "Pressure is equal to:", o: ["Force × Area", "Force / Area", "Mass / Volume", "Work / Time"] },
+            { s: "PHYSICS", q: "A transformer works on the principle of:", o: ["Self induction", "Mutual induction", "Eddy currents", "Rectification"] },
+            { s: "PHYSICS", q: "Density of water is maximum at:", o: ["0°C", "4°C", "100°C", "-4°C"] },
+            { s: "PHYSICS", q: "The rate of doing work is called:", o: ["Energy", "Power", "Force", "Momentum"] },
+            { s: "PHYSICS", q: "The unit of radioactivity is:", o: ["Tesla", "Curie", "Henry", "Weber"] },
+            { s: "PHYSICS", q: "The escape velocity from Earth is approximately:", o: ["7 km/s", "11.2 km/s", "15 km/s", "20 km/s"] },
+            { s: "PHYSICS", q: "An ideal voltmeter should have resistance:", o: ["Zero", "Low", "High", "Infinite"] },
+            { s: "PHYSICS", q: "Heat is transferred in liquids mainly by:", o: ["Conduction", "Convection", "Radiation", "Induction"] },
+            { s: "PHYSICS", q: "Primary colors are:", o: ["Red, Blue, Green", "Red, Yellow, Blue", "RGB and Black", "Yellow, Cyan, Magenta"] },
+            { s: "PHYSICS", q: "One horsepower (HP) is equal to:", o: ["746 Watts", "1000 Watts", "500 Watts", "846 Watts"] },
+            
+            // ENGLISH
+            { s: "ENGLISH", q: "Choose the synonym of 'Vivid':", o: ["Dull", "Bright", "Dark", "Lazy"] },
+            { s: "ENGLISH", q: "Choose the antonym of 'Expand':", o: ["Shrink", "Grow", "Stretch", "Widen"] },
+            { s: "ENGLISH", q: "'She ___ to the market yesterday.'", o: ["Go", "Goes", "Gone", "Went"] },
+            { s: "ENGLISH", q: "A person who treats skin diseases is a:", o: ["Cardiologist", "Dermatologist", "Pediatrician", "Oncologist"] },
+            { s: "ENGLISH", q: "'The cat sat ___ the mat.'", o: ["In", "On", "At", "Under"] },
+            { s: "ENGLISH", q: "Identify the correctly spelled word:", o: ["Recieve", "Receive", "Receivee", "Recive"] },
+            { s: "ENGLISH", q: "The plural of 'Cactus' is:", o: ["Cactuses", "Cacti", "Cactie", "Cactis"] },
+            { s: "ENGLISH", q: "He is afraid ___ dogs.", o: ["From", "With", "Of", "By"] },
+            { s: "ENGLISH", q: "'Apple of one's eye' means:", o: ["Very dear", "Very sour", "An enemy", "To be blind"] },
+            { s: "ENGLISH", q: "Find the Odd One Out:", o: ["Table", "Chair", "Sofa", "Apple"] },
+            
+            // GK
+            { s: "GENERAL KNOWLEDGE", q: "Capital of Pakistan is:", o: ["Karachi", "Lahore", "Islamabad", "Peshawar"] },
+            { s: "GENERAL KNOWLEDGE", q: "The largest province of Pakistan by area is:", o: ["Sindh", "Punjab", "Balochistan", "KPK"] },
+            { s: "GENERAL KNOWLEDGE", q: "Who was the first Prime Minister of Pakistan?", o: ["Quaid-e-Azam", "Liaquat Ali Khan", "Ayub Khan", "Z.A. Bhutto"] },
+            { s: "GENERAL KNOWLEDGE", q: "SIUT is located in which city?", o: ["Lahore", "Islamabad", "Karachi", "Quetta"] },
+            { s: "GENERAL KNOWLEDGE", q: "'The City of Lights' is the nickname of:", o: ["Faisalabad", "Multan", "Karachi", "Sukkur"] },
+            { s: "GENERAL KNOWLEDGE", q: "Which is the highest mountain peak in Pakistan?", o: ["Nanga Parbat", "K2", "Rakaposhi", "Mount Everest"] },
+            { s: "GENERAL KNOWLEDGE", q: "Currency of Japan is:", o: ["Dollar", "Euro", "Yen", "Rial"] },
+            { s: "GENERAL KNOWLEDGE", q: "The First World War started in:", o: ["1912", "1914", "1918", "1939"] },
+            { s: "GENERAL KNOWLEDGE", q: "Dr. Adeeb Rizvi is the founder of:", o: ["Shaukat Khanum", "SIUT", "Edhi Foundation", "Indus Hospital"] },
+            { s: "GENERAL KNOWLEDGE", q: "How many Islamic months are there?", o: ["10", "11", "12", "13"] }
+        ];
+
+        // --- 2. RENDER QUESTIONS ---
+        const container = document.getElementById("questions-container");
+        let currentSection = "";
+
+        questionsData.forEach((item, index) => {
+            // Check if we need a new section header
+            if (item.s !== currentSection) {
+                currentSection = item.s;
+                const sectionHeader = document.createElement("div");
+                sectionHeader.className = "section-title";
+                sectionHeader.innerHTML = `<h2>${currentSection}</h2>`;
+                container.appendChild(sectionHeader);
+            }
+
+            const qBlock = document.createElement("div");
+            qBlock.className = "question-block";
+            
+            // Question Text
+            const qText = document.createElement("div");
+            qText.className = "question-text";
+            qText.innerText = `${index + 1}. ${item.q}`;
+            qBlock.appendChild(qText);
+
+            // Options
+            const optionsDiv = document.createElement("div");
+            optionsDiv.className = "options";
+            
+            item.o.forEach((opt, oIndex) => {
+                const label = document.createElement("label");
+                label.className = "option-label";
+                
+                const radio = document.createElement("input");
+                radio.type = "radio";
+                radio.name = `q${index}`;
+                radio.value = opt;
+                
+                label.appendChild(radio);
+                label.appendChild(document.createTextNode(opt));
+                optionsDiv.appendChild(label);
+            });
+            
+            qBlock.appendChild(optionsDiv);
+            container.appendChild(qBlock);
+        });
+
+        // --- 3. TIMER LOGIC ---
+        let timeRemaining = 100 * 60; // 100 minutes in seconds
+        const display = document.getElementById('timer-display');
+        let timerInterval;
+        let isPaused = false;
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    const minutes = Math.floor(timeRemaining / 60);
+                    const seconds = timeRemaining % 60;
+
+                    display.textContent = `${minutes < 10 ? '0' : ''}${mi
